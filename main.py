@@ -271,9 +271,13 @@ class Game:
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == 'rawinput':
+    if len(sys.argv) > 1 and sys.argv[1] == 'rawinput':
         list_input_type = 'rawlist'
     else:
         list_input_type = 'list'
+
+    if not os.path.exists('./saved_stories'):
+        os.mkdir('./saved_stories')
+
     g = Game()
     g.play()

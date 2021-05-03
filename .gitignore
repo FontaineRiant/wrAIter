@@ -1,7 +1,9 @@
 models/*
+!models/models_go_here.md
+
 *.wav
 fine-tuning/checkpoint
-fine-tuning/data
+fine-tuning/data/*
 fine-tuning/drivers
 fine-tuning/scrape-*
 fine-tuning/settings.json
@@ -9,7 +11,8 @@ fine-tuning/settings.json
 venv
 __pycache__
 .idea
-saved_stories
+saved_stories/*
+
 story/grammars/*
 !story/grammars/__init__.py
 !story/grammars/scifi_rules.json

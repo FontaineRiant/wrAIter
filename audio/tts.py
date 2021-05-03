@@ -1,5 +1,5 @@
+
 import os, sys
-import winsound
 from pathlib import Path
 import TTS
 from TTS.utils.synthesizer import Synthesizer
@@ -8,6 +8,13 @@ from contextlib import contextmanager
 import random
 import re
 import wave
+
+WINSOUND = True
+
+try:
+    import winsound
+except ImportError:
+    WINSOUND = False
 
 model_name = "tts_models/en/ljspeech/tacotron2-DCA"
 #model_name = "tts_models/en/ljspeech/glow-tts"
@@ -45,7 +52,7 @@ def suppress_stdout():
 def deep_play(text, pitch=1, interrupt=True):
     if pitch is None:
         pitch = 1
-    if pitch < 1:
+    if pitch == 0 or not WINSOUND:
         return
 
     text = text.replace('"', '')

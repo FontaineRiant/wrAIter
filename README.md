@@ -18,7 +18,7 @@ and was fine-tuned to write fiction.
 * Save, load, continue and revert functions.
 * Randomly generated or custom prompts to start new stories.
 
-** wrAIter's voice function only works on Windows. You can disable it in the main menu.
+** wrAIter's voice feature only works on Windows for now.
 
 ## Installation
 0. (Optional) Set up CUDA 10.1 to enable hardware acceleration if your GPU can take it (4 GB VRAM).

@@ -9,26 +9,12 @@ import random
 import re
 import wave
 
-WINSOUND = True
-
 try:
     import winsound
+    WINSOUND = True
 except ImportError:
     WINSOUND = False
-
-model_name = "tts_models/en/ljspeech/tacotron2-DCA"
-#model_name = "tts_models/en/ljspeech/glow-tts"
-
-vocoder_name = "vocoder_models/en/ljspeech/multiband-melgan"
-#vocoder_name = "vocoder_models/universal/libri-tts/wavegrad"
-#vocoder_name = "vocoder_models/universal/libri-tts/fullband-melgan"
-
-path = Path(TTS.__file__).parent / "./.models.json"
-manager = ModelManager(path)
-model_path, config_path, _ = manager.download_model(model_name)
-vocoder_path, vocoder_config_path, _ = manager.download_model(vocoder_name)
-synthesizer = Synthesizer(tts_checkpoint=model_path, tts_config_path=config_path,
-                          vocoder_checkpoint=vocoder_path, vocoder_config=vocoder_config_path, use_cuda=True)
+    print('winsound unavailable, voice disabled')
 
 
 tempdir = "./audio"
@@ -107,3 +93,19 @@ def change_wav_pitch(file, pitch=1.0):
         wf.setsampwidth(2)
         wf.setframerate(int(rate*pitch))
         wf.writeframes(signal)
+
+
+if WINSOUND:
+    model_name = "tts_models/en/ljspeech/tacotron2-DCA"
+    #model_name = "tts_models/en/ljspeech/glow-tts"
+
+    vocoder_name = "vocoder_models/en/ljspeech/multiband-melgan"
+    #vocoder_name = "vocoder_models/universal/libri-tts/wavegrad"
+    #vocoder_name = "vocoder_models/universal/libri-tts/fullband-melgan"
+
+    path = Path(TTS.__file__).parent / "./.models.json"
+    manager = ModelManager(path)
+    model_path, config_path, _ = manager.download_model(model_name)
+    vocoder_path, vocoder_config_path, _ = manager.download_model(vocoder_name)
+    synthesizer = Synthesizer(tts_checkpoint=model_path, tts_config_path=config_path,
+                              vocoder_checkpoint=vocoder_path, vocoder_config=vocoder_config_path, use_cuda=True)

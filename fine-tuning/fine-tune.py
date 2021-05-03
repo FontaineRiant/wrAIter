@@ -49,5 +49,3 @@ gpt2.finetune(
 )
 
 gpt2.generate(sess)
-
-gpt2.generate(sess)

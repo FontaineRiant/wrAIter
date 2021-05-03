@@ -94,4 +94,3 @@ def scrape_subreddit(subreddit: str, exclude_comments=False):
         print("Reddit content saved successfully.")
 
 
-scrape_reddit("")

@@ -1,0 +1,16 @@
+models
+*.wav
+fine-tuning/checkpoint
+fine-tuning/data
+fine-tuning/drivers
+fine-tuning/scrape-*
+fine-tuning/settings.json
+*.pkl
+venv
+__pycache__
+.idea
+saved_stories
+story/grammars/*
+!story/grammars/__init__.py
+!story/grammars/scifi_rules.json
+!story/grammars/fantasy_rules.json

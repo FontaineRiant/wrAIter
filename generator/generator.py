@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import json
 import os
-
-import numpy as np
 import tensorflow as tf
 
 from generator import model

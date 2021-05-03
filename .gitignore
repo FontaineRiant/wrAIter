@@ -1,4 +1,4 @@
-models
+models/*
 *.wav
 fine-tuning/checkpoint
 fine-tuning/data

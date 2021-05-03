@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 from difflib import SequenceMatcher
 
 from PyInquirer import style_from_dict, Token, prompt
@@ -11,6 +12,7 @@ from story.story import SAVE_PATH
 from generator.generator import Generator
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 
 
 class Game:
@@ -44,7 +46,7 @@ class Game:
                 choices.insert(1, 'save')
 
             main_menu = [{
-                'type': 'list',
+                'type': list_input_type,
                 'message': 'Choose an option',
                 'name': 'action',
                 'choices': choices
@@ -78,7 +80,7 @@ class Game:
     def new_prompt(self):
 
         menu = [{
-            'type': 'list',
+            'type': list_input_type,
             'message': 'Choose a character',
             'name': 'action',
             'choices': ['< Back', 'custom'] + [
@@ -117,7 +119,7 @@ class Game:
 
     def load_prompt(self):
         menu = [{
-            'type': 'list',
+            'type': list_input_type,
             'message': 'Choose a file to load',
             'name': 'action',
             'choices': ['< Back'] + sorted([f[:-5] for f in os.listdir(SAVE_PATH) if f.endswith('.json')],
@@ -200,7 +202,7 @@ class Game:
             choices = ['< more >'] + self.story.gen_n_results(4) + ['< revert >', '< menu >']
             question = [
                 {
-                    'type': 'list',
+                    'type': list_input_type,
                     'name': 'model_name',
                     'message': f'choice:',
                     'choices': choices
@@ -234,7 +236,7 @@ class Game:
 
         question = [
             {
-                'type': 'list',
+                'type': list_input_type,
                 'name': 'model_name',
                 'message': f'Chose a model for the AI (located in {models_dir}, current is {self.gen.model_name}). '
                            f'\nThe new model won\'t be able to use the GPU while still allocating VRAM.\nChange default'
@@ -269,5 +271,9 @@ class Game:
 
 
 if __name__ == "__main__":
+    if sys.argv[1] == 'rawinput':
+        list_input_type = 'rawlist'
+    else:
+        list_input_type = 'list'
     g = Game()
     g.play()

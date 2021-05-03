@@ -1,15 +1,14 @@
-
 import os, sys
 from pathlib import Path
-import TTS
-from TTS.utils.synthesizer import Synthesizer
-from TTS.utils.manage import ModelManager
 from contextlib import contextmanager
 import random
 import re
 import wave
 
 try:
+    import TTS
+    from TTS.utils.synthesizer import Synthesizer
+    from TTS.utils.manage import ModelManager
     import winsound
     WINSOUND = True
 except ImportError:

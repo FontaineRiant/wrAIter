@@ -1,5 +1,7 @@
 ![](https://i.imgur.com/GkFedT1.png)
 
+# Model coming soon
+
 wrAIter is an AI that writes stories while letting the user interact and add to the story.
 You can write a paragraph, making the AI write the next one, you add another, etc.
 Or you can enable "choice mode" and make the AI give you a list of propositions you can chose
@@ -23,7 +25,7 @@ and was fine-tuned to write fiction.
 1. Install python 3.7
 2. Download this repository.
 3. Run install.ps1 (windows powershell) or install.sh (bash).
-4. Download the model [scify-335M](...) and place it in `models/`
+4. Download the model [scify-335M](...) (COMING SOON) and place it in `models/`
 5. Play by running play.ps1 (windows powershell) or play.sh (bash).
 
 

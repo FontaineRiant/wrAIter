@@ -95,8 +95,8 @@ class Game:
             questions = [{
                 'type': 'input',
                 'message': "Type a context. The AI won't forget it, so preferably describe aspects of the setting"
-                           "\nthat you expect to remain true as the story develops. Who are you? What world do you "
-                           "live in?\n",
+                           "\nthat you expect to remain true as the story develops. Who are your charactesr? What "
+                           "world do they live in?\n",
                 'name': 'context'
             }, {
                 'type': 'input',
@@ -150,7 +150,7 @@ class Game:
     def loop_text(self):
         print(self.story)
         while True:
-            user_input = input('> ').strip()
+            user_input = input('\n> ').strip()
 
             if user_input == '/menu':
                 return
@@ -203,6 +203,7 @@ class Game:
     def loop_choice(self):
         print(self.story)
         while True:
+            print()
             choices = ['< more >'] + self.story.gen_n_results(3) + ['< revert >', '< menu >']
             question = [
                 {

@@ -1,4 +1,4 @@
-![](https://i.imgur.com/yKCh8YK.png)
+![](https://i.imgur.com/wbxNBBA.png)
 
 wrAIter is a voiced AI that writes stories while letting the user interact and add to the story.
 You can write a paragraph, making the AI write the next one, you add another, etc.
@@ -18,6 +18,7 @@ and was fine-tuned to write science fiction.
 
 ** wrAIter's voice feature only works on Windows for now, and definitely won't be available in Colab.
 
+![](https://i.imgur.com/bOSnLJi.png)
 
 ## Local installation
 0. (Optional) Set up CUDA 10.1 to enable hardware acceleration if your GPU can take it (4 GB VRAM).

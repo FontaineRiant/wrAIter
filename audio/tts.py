@@ -13,7 +13,7 @@ try:
     WINSOUND = True
 except ImportError:
     WINSOUND = False
-    print('winsound unavailable, voice disabled')
+    print('winsound/pytorch unavailable, voice disabled')
 
 
 tempdir = "./audio"

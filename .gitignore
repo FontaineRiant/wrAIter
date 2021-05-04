@@ -5,6 +5,7 @@ models/*
 fine-tuning/checkpoint
 fine-tuning/data/*
 fine-tuning/drivers
+fine-tuning/models
 fine-tuning/scrape-*
 fine-tuning/settings.json
 *.pkl

@@ -14,7 +14,6 @@ from generator.generator import Generator
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 
-
 class Game:
     def __init__(self):
         self.gen = Generator()
@@ -40,7 +39,7 @@ class Game:
 
     def play(self):
         while True:
-            choices = ['continue', 'load', 'new', 'voice', 'model'] +\
+            choices = ['continue', 'load', 'new', 'voice', 'model'] + \
                       ['switch to choice mode' if self.loop == self.loop_text else 'switch to text mode']
             if len(self.story.events) > 1:
                 choices.insert(1, 'save')
@@ -94,9 +93,9 @@ class Game:
         elif action == 'custom':
             questions = [{
                 'type': 'input',
-                'message': "Type a context. The AI won't forget it, so preferably describe aspects of the setting "
-                           "that you expect to remain true as the story develops. Who are you? What world do you live "
-                           "in?\n",
+                'message': "Type a context. The AI won't forget it, so preferably describe aspects of the setting"
+                           "\nthat you expect to remain true as the story develops. Who are you? What world do you "
+                           "live in?\n",
                 'name': 'context'
             }, {
                 'type': 'input',
@@ -115,7 +114,8 @@ class Game:
 
         print("Generating story ...")
         result = self.story.new(context, custom_prompt)
-        tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
+        # tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
+        tts.deep_play(result, self.voice)
 
     def load_prompt(self):
         menu = [{
@@ -156,7 +156,8 @@ class Game:
                 if len(self.story.events) < 4:
                     result = self.story.new(self.story.events[0], self.story.events[1])
                     print(result)
-                    tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
+                    # tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
+                    tts.deep_play(result, self.voice)
                 else:
                     self.story.events = self.story.events[:-2]
                     print("Last action reverted.")
@@ -164,20 +165,20 @@ class Game:
 
             elif user_input.startswith('/'):
                 print('Known commands:\n'
-                      '/menu        go to main menu (it has a save option)\n'
-                      '/revert      revert last action and response (if there are none, regenerate an intro)\n'
-                      'Tip: Start or finish your input with a dash ("-") to complete the last response '
-                      'or let the AI complete your input. Example:\n'
-                      'AI:   This sentence is probably not finished so\n'
-                      'User: -this will complete the sentence without inserting a newline. Also this-\n'
-                      'AI:   will be interpreted by the AI a sentence to complete.')
+                      '/menu    go to main menu (it has a save option)\n'
+                      '/revert  revert last action and response (if there are none, regenerate an intro)\n\n'
+                      'Tip:     Start or finish your input with a dash ("-") to complete the last response '
+                      '         or let the AI complete your input. Example:\n'
+                      'AI:      This sentence is probably not finished so\n'
+                      'User:    -this will complete the sentence without inserting a newline. Also this-\n'
+                      'AI:      will be interpreted by the AI a as sentence to complete.')
             else:
                 action = user_input.strip()
 
                 if action != '':
                     # clean end of string
                     if action[-1] == "-":
-                        action = action[:-1] + " "
+                        pass
                     elif action[-1] in [".", "?", "!"] or action.endswith('."') or action.endswith(
                             '?"') or action.endswith('!"'):
                         action = action

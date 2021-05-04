@@ -42,6 +42,27 @@ class Story:
         self.act(prompt)
         return str(self)
 
+    def get_clipped_events(self, action=''):
+
+        # find the biggest memory that fits 1024 tokens
+        mem_ind = 1
+        while len(
+                self.gen.enc.encode(self.events[0] + '\n'.join(filter(None, self.events[-mem_ind:])) + '\n' + action
+                                    )) < 1024 - self.gen.length and len(self.events) - 1 >= mem_ind:
+            mem_ind += 1
+        mem_ind -= 1
+
+        events_clipped = self.events[0]
+        while mem_ind > 0:
+            if len(self.events) - 1 >= mem_ind and self.events[-mem_ind]:
+                events_clipped += '\n' + self.events[-mem_ind]
+            mem_ind -= 1
+
+        text = events_clipped + '\n' + action
+        # parse special character "-" as a newline cancellation
+        text = re.sub(r'(\n-)|(-\n)|(-$)', ' ', text)
+        return text
+
     def clean_result(self, result):
         result = result.strip()
 
@@ -51,7 +72,7 @@ class Story:
         result = result[:end_of_sentence_index].strip()
 
         # remove repeating substrings of 2+ characters at the end of result
-        result = re.sub(r'([\s\S]{2,})(\1)+$', r'\1', result)
+        result = re.sub(r'([\s\S]{2,})([\s\S]?\1)+$', r'\1', result)
 
         # close open quotes
         if result.count('"') % 2 != 0:
@@ -82,29 +103,8 @@ class Story:
             res.append(self.clean_result(result))
         return res
 
-    def get_clipped_events(self, action=''):
-
-        # find the biggest memory that fits 1024 tokens
-        mem_ind = 1
-        while len(
-                self.gen.enc.encode(action + '\n' + self.events[0] + '\n'.join(self.events[-mem_ind:])
-                                    )) < 1024 - self.gen.length and len(self.events) - 1 >= mem_ind:
-            mem_ind += 1
-        mem_ind -= 1
-
-        events_clipped = self.events[0]
-        while mem_ind > 0:
-            if len(self.events) - 1 >= mem_ind:
-                events_clipped += '\n' + self.events[-mem_ind]
-            mem_ind -= 1
-
-        text = events_clipped + '\n' + action
-        # parse special character "-" as a newline cancellation
-        text = re.sub(r'(\n-)|(-\n)', ' ', text)
-        return text
-
     def __str__(self):
-        text = "\n".join(self.events)
+        text = "\n".join(filter(None, self.events))
         # parse special character "-" as a newline cancellation
-        text = re.sub(r'(\n-)|(-\n)', ' ', text)
+        text = re.sub(r'(\n-)|(-\n)|(-$)', ' ', text)
         return text

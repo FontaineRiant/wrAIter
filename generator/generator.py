@@ -15,7 +15,7 @@ class Generator:
                  nsamples=1,
                  batch_size=1,
                  length=60,
-                 temperature=0.4,
+                 temperature=0.6,  # 0.4,
                  top_k=40,
                  top_p=0.9,
                  models_dir='models',

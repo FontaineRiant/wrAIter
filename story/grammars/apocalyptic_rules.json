@@ -35,7 +35,7 @@
   "scavenger_action" : ["You decide to stay there for #stay_time#." , "You head toward the nearby #colony#."],
   "scavenger_item" : ["#old_metal_adj_opt#crowbar", "#old_metal_adj_opt#handspike", "#old_metal_adj_opt#knife", "#old_metal_adj_opt#rifle", "#old_metal_adj_opt#gun", "#old_cloth_adj_opt#backpack", "#old_metal_adj_opt#canteen", "#old_cloth_adj_opt#gas mask", "#old_metal_adj_opt#lockpick", "#old_cloth_adj_opt#cloak", "#old_cloth_adj_opt#hat"],
   "scavenger_context" : "#[character_type:lonely scavenger][item1:#scavenger_item.a#][item2:#scavenger_item.a#]apocalypse_context#",
-  "scavenger_prompt" : "You spend a #day# trying to get out as much as you can from a #abandoned_adj# #scaveged_item#. At the end you find #found_item#. #scavenger_action# #end_sentence#",
+  "scavenger_prompt" : "You spend a #day# trying to get out as much as you can from a #abandoned_adj# #scaveged_item#. At the end you find #found_item#. #scavenger_action# #end_sentence#-",
 
   "body_side" : ["left", "right"],
   "finger_number" : ["two", "three", "four", "six", "seven", "eight"],
@@ -58,7 +58,7 @@
   "mutant_good_prompt_effect" : ["get the best education possible. You go to #subject# class today.", "are treated as a #god#. You prepare for a holy ceremony."],
   "mutant_good_prompt" : "#mutant_good_prompt_reason#, and you #mutant_good_prompt_effect#",
   "mutant_bad_or_good_prompt" : ["#mutant_bad_prompt#", "#mutant_good_prompt#"],
-  "mutant_prompt" : "In the #colony# you were born in, your strange condition was considered #mutant_bad_or_good_prompt# #end_sentence#",
+  "mutant_prompt" : "In the #colony# you were born in, your strange condition was considered #mutant_bad_or_good_prompt# #end_sentence#-",
   "mutant_context" : "#[character_type:mutant][item1:#mutant_condition#][item2:#mutant_condition#]apocalypse_context#",
 
   "pub" : ["pub", "bar", "louge", "saloon"],
@@ -80,7 +80,7 @@
   "headhunter_action" : ["capture", "find", "kill", "round up", "murder", "assasinate"],
   "headhunter_status" : ["You #pub_action# in #pub_with_adj.a#, but you #leaving_reason#. You #decide# to #leave# the building.", "You are driving your #old_metal_adj_opt##device#. You go past many #abandoned_adj# #scaveged_item.s#. You arrive at #colony.a# and stop the engine."],
   "headhunter_mission" : "You are on #mission.a# to #headhunter_action# #elite_proffesion.a# named #character_name#. Your target lives #target_location#.",
-  "headhunter_prompt" : "#headhunter_status# #headhunter_mission#\n\n#end_sentence#",
+  "headhunter_prompt" : "#headhunter_status# #headhunter_mission#\n\n#end_sentence#-",
   "headhunter_context" : "#[character_type:headhunter][item1:#headhunter_item.a#][item2:#headhunter_item.a#]apocalypse_context#",
 
   "character_context" : ["#headhunter_context#", "#mutant_context#", "#scavenger_context#"],

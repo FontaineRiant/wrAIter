@@ -113,6 +113,7 @@ class Game:
             context = grammars.generate(action, "character", "context").strip()
             custom_prompt = grammars.generate(action, "character", "prompt").strip()
 
+        print("Type /help for a list of commands.")
         print("Generating story ...")
         result = self.story.new(context, custom_prompt)
         # tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
@@ -168,11 +169,12 @@ class Game:
                 print('Known commands:\n'
                       '/menu    go to main menu (it has a save option)\n'
                       '/revert  revert last action and response (if there are none, regenerate an intro)\n\n'
-                      'Tip:     Start or finish your input with a dash ("-") to complete the last response '
+                      'Tips:    Press Enter without typing anything to let the AI continue for you.\n'
+                      '         Start or finish your input with a dash ("-") to complete the last response\n'
                       '         or let the AI complete your input. Example:\n'
-                      'AI:      This sentence is probably not finished so\n'
-                      'User:    -this will complete the sentence without inserting a newline. Also this-\n'
-                      'AI:      will be interpreted by the AI a as sentence to complete.')
+                      '         AI:    This sentence is probably not finished so\n'
+                      '         User:  -this will complete the sentence without inserting a newline. Also this-\n'
+                      '         AI:    will be interpreted by the AI a as sentence to complete.')
             else:
                 action = user_input.strip()
 

@@ -14,9 +14,9 @@ class Generator:
                  seed=None,
                  nsamples=1,
                  batch_size=1,
-                 length=60,
-                 temperature=0.6,  # 0.4,
-                 top_k=40,
+                 length=40,
+                 temperature=0.7,  # 0.4,
+                 top_k=0,
                  top_p=0.9,
                  models_dir='models',
                  gpu=True):

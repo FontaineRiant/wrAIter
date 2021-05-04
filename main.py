@@ -10,13 +10,14 @@ from story import grammars
 from story.story import Story
 from story.story import SAVE_PATH
 from generator.generator import Generator
+import argparse
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 
 class Game:
     def __init__(self):
-        self.gen = Generator()
+        self.gen = Generator(model_name=args.model[0])
         self.style = style_from_dict({
             Token.Separator: '#cc5454',
             Token.QuestionMark: '#673ab7 bold',
@@ -200,7 +201,7 @@ class Game:
     def loop_choice(self):
         print(self.story)
         while True:
-            choices = ['< more >'] + self.story.gen_n_results(4) + ['< revert >', '< menu >']
+            choices = ['< more >'] + self.story.gen_n_results(3) + ['< revert >', '< menu >']
             question = [
                 {
                     'type': list_input_type,
@@ -272,10 +273,19 @@ class Game:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == 'rawinput':
-        list_input_type = 'rawlist'
-    else:
-        list_input_type = 'list'
+
+    # declare command line arguments
+    parser = argparse.ArgumentParser(description='wrAIter: AI writing assistant with a voice')
+    parser.add_argument('-j', '--jupyter', action='store_true',
+                        default=False,
+                        help='jupyter compatibility mode (replaces arrow key selection)')
+    parser.add_argument('-m', '--model', action='store',
+                        default=['scifi-355M'], nargs=1, type=str,
+                        help='model name')
+
+    args = parser.parse_args()
+
+    list_input_type = 'rawlist' if args.jupyter else 'list'
 
     if not os.path.exists('./saved_stories'):
         os.mkdir('./saved_stories')

@@ -1,4 +1,4 @@
-![](https://i.imgur.com/GkFedT1.png)
+![](https://i.imgur.com/yKCh8YK.png)
 
 wrAIter is a voiced AI that writes stories while letting the user interact and add to the story.
 You can write a paragraph, making the AI write the next one, you add another, etc.
@@ -11,31 +11,33 @@ and was fine-tuned to write science fiction.
 ## Features
 * Play in Colab or locally
 * State-of-the-art Artificial Intelligence fine-tuned for the specific purpose of writing stories
-* A narrator AI that reads the story out loud (TTS)**
+* A high quality narrator AI that reads the story out loud (TTS)**
 * Two modes to build a story: alternating AI-human writing or chosing from AI generated options
 * Save, load, continue and revert functions
 * Randomly generated or custom prompts to start new stories
 
 ** wrAIter's voice feature only works on Windows for now, and definitely won't be available in Colab.
 
+
 ## Local installation
 0. (Optional) Set up CUDA 10.1 to enable hardware acceleration if your GPU can take it (4 GB VRAM).
 1. Install python 3.7
 2. Download or clone this repository.
-3. Run install.ps1 (windows powershell) or install.sh (shell script).
+3. Run `install.ps1` (windows powershell) or `install.sh` (shell script).
 4. Download a [model](https://drive.google.com/drive/folders/14aex0HBP7EtUn6FGLfIoHe3gWmrIDZbI?usp=sharing) (see next section) and place it in `models/`
-5. Play by running play.ps1 (windows powershell) or play.sh (shell script). If you want to change models from `scifi-355M`, you'll have to edit those scripts and replace `scifi-355M` with your model's name.
-
+5. Play by running `play.ps1` (windows powershell) or `play.sh` (shell script).
 
 ## Play on Google Colab
 1. Go the wrAIter's [Colab notebook](https://colab.research.google.com/drive/1Bk0_cPV5M61TWWslDw-nNjmtGG3nBF4W?usp=sharing)
 2. Runtime > Run all (ctrl+F9)
-3. Wait a couple minutes for the input field to appear in the last cell.
+3. Wait a couple of minutes for the main menu to appear in the last cell.
 
 
 ## Models
 Pretrained models are available [here](https://drive.google.com/drive/folders/14aex0HBP7EtUn6FGLfIoHe3gWmrIDZbI?usp=sharing).
 The directory names are the model names. Download the directory of your choice and place it in `models/`.
+If you want to change from `scifi-355M`, you'll have to edit `play.sh` and `play.ps1` and replace `scifi-355M` with your model's name.
+
 
 The 335M models a just light enough to run on most GPUs (tested on a GTX 980), and are otherwise reasonably fast on CPUs,
 while trainable in a Google Colab notebook.

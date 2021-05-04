@@ -95,7 +95,7 @@ class Game:
             questions = [{
                 'type': 'input',
                 'message': "Type a context. The AI won't forget it, so preferably describe aspects of the setting"
-                           "\nthat you expect to remain true as the story develops. Who are your charactesr? What "
+                           "\nthat you expect to remain true as the story develops. Who are your characters? What "
                            "world do they live in?\n",
                 'name': 'context'
             }, {

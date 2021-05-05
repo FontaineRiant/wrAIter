@@ -8,8 +8,13 @@ from generator.generator import Generator
 SAVE_PATH = "./saved_stories/"
 
 
+with open("./story/censored_words.txt", "r") as f:
+    censored_words = [l.strip(" \n\r,.") for l in f.readlines()]
+
+
 class Story:
-    def __init__(self, gen: Generator):
+    def __init__(self, gen: Generator, censor:bool):
+        self.censor = censor
         self.gen = gen
         self.events = []
 
@@ -78,17 +83,24 @@ class Story:
         if result.count('"') % 2 != 0:
             result += '"'
 
-        return result
+        if self.censor:
+            result = re.sub(r'|'.join(rf'(\b{re.escape(s)}\b)'for s in censored_words), '[CENSORED]', result,
+                            flags=re.IGNORECASE)
+
+        return result.strip()
 
     def act(self, action: str = '', tries: int = 10):
         input_str = self.get_clipped_events(action)
         result = self.gen.generate(input_str)
         result = self.clean_result(result)
 
-        while (len(result) < 2 or SequenceMatcher(None, self.events[-1], result).ratio() > 0.9) and tries >= 0:
-            tries -= 1
+        while (len(result) < 2
+               or SequenceMatcher(None, self.events[-1], result).ratio() > 0.9
+               or '[CENSORED]' in result):
+            # reject censored output, empty outputs and repeating outputs
             if tries == 0:
                 return None
+            tries -= 1
             result = self.gen.generate(input_str)
             result = self.clean_result(result)
 

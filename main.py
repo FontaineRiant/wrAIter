@@ -27,8 +27,8 @@ class Game:
             Token.Answer: '#f44336 bold',
             Token.Question: '',
         })
-        self.story = Story(self.gen)
-        self.voice = 1.05
+        self.story = Story(self.gen, censor=args.censor)
+        self.voice = 1.10
         self.loop = self.loop_text
 
         print("""
@@ -116,6 +116,7 @@ class Game:
         print("Type /help for a list of commands.")
         print("Generating story ...")
         result = self.story.new(context, custom_prompt)
+
         # tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
         tts.deep_play(result, self.voice)
 
@@ -131,7 +132,6 @@ class Game:
         action = prompt(menu, style=self.style)['action']
 
         if action != '< Back':
-            self.story = Story(self.gen)
             self.story.load(action)
 
     def save_prompt(self):
@@ -190,7 +190,7 @@ class Game:
 
                 result = self.story.act(action)
                 if result is None:
-                    print("--- The model failed to produce an no-repeating output. Try something else.")
+                    print("--- The model failed to produce an decent output. Try something else.")
                 else:
                     print(result)
                     similarity = SequenceMatcher(None, action, result).ratio()
@@ -282,6 +282,9 @@ if __name__ == "__main__":
     parser.add_argument('-j', '--jupyter', action='store_true',
                         default=False,
                         help='jupyter compatibility mode (replaces arrow key selection)')
+    parser.add_argument('-c', '--censor', action='store_true',
+                        default=False,
+                        help='adds a censor to the generator')
     parser.add_argument('-m', '--model', action='store',
                         default=['scifi-355M'], nargs=1, type=str,
                         help='model name')

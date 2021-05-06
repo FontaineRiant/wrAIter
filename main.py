@@ -81,7 +81,7 @@ class Game:
 
         menu = [{
             'type': list_input_type,
-            'message': 'Choose a character',
+            'message': 'Choose a starting prompt',
             'name': 'action',
             'choices': ['< Back', 'custom'] + [
                 f[:-11] for f in os.listdir('./story/grammars') if f.endswith('_rules''.json')
@@ -94,13 +94,13 @@ class Game:
         elif action == 'custom':
             questions = [{
                 'type': 'input',
-                'message': "Type a context. The AI won't forget it, so preferably describe aspects of the setting"
+                'message': "Type a short context. The AI won't forget it, so preferably describe aspects of the setting"
                            "\nthat you expect to remain true as the story develops. Who are your characters? What "
                            "world do they live in?\n",
                 'name': 'context'
             }, {
                 'type': 'input',
-                'message': 'Type a prompt. This is the start of your story.\n',
+                'message': 'Type a short prompt. This is the start of your story.\n',
                 'name': 'prompt'
             }]
             custom_input = prompt(questions, style=self.style)
@@ -188,7 +188,7 @@ class Game:
                     else:
                         action = action + "."
 
-                result = self.story.act(action)
+                result = self.story.act(action + '\n')
                 if result is None:
                     print("--- The model failed to produce an decent output. Try something else.")
                 else:

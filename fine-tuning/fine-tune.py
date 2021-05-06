@@ -26,11 +26,11 @@ for filename in ['checkpoint','encoder.json','hparams.json','model.ckpt.data-000
                 f.write(chunk)
                 pbar.update(chunk_size)
 
-file_name = "./data/data.npz"
+file_name = "./data/data-scifi.npz"
 
 batch_size = 8
 learning_rate = 0.0001
-steps = 8000
+steps = 10000
 
 sess = gpt2.start_tf_sess()
 gpt2.finetune(
@@ -47,5 +47,3 @@ gpt2.finetune(
     sample_length=100,
     overwrite=True
 )
-
-gpt2.generate(sess)

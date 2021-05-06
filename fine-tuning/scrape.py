@@ -6,6 +6,7 @@ import json
 import codecs
 import praw
 import requests
+import gpt_2_simple as gpt2
 
 
 def scrape_twitter(target_user_handle: str, exclude_replies: bool = False):
@@ -98,7 +99,7 @@ def scrape_subreddit(subreddit: str, exclude_comments=False):
         print("Reddit content saved successfully.")
 
 
-def scrape_pushift(subreddit: str, comments=True):
+def scrape_pushift(subreddit: str, comments=True, lower_character_limit=100, sample_limit=10000):
     type = 'comment' if comments else 'submission'
     print(f"Fetching reddit {type}s from r/{subreddit} ...")
     last_stamp = ''
@@ -106,7 +107,7 @@ def scrape_pushift(subreddit: str, comments=True):
 
     with codecs.open(f'data/r_{subreddit}_{type}s.txt', "w+", "utf") as out_file:
         while True:
-            url = f'https://api.pushshift.io/reddit/{type}/search?subreddit=Eve&size=500' \
+            url = f'https://api.pushshift.io/reddit/{type}/search?subreddit={subreddit}&size=500' \
                   f'&before={last_stamp}&fields={"body" if comments else "selftext"},created_utc'
 
             time.sleep(1)
@@ -133,10 +134,11 @@ def scrape_pushift(subreddit: str, comments=True):
             for body, stamp in [(c['body' if comments else 'selftext'], c['created_utc']) for c in j['data']]:
                 body = re.sub(r"^.*?https?://.*?$", "", body, flags=re.MULTILINE)  # remove urls
                 body = re.sub(r"^.*?&amp;#x200B;.*?$", "", body, flags=re.MULTILINE)  # remove weird reddit separator
+                body = re.sub(r"^.*?&amp;nbsp;.*?$", "", body, flags=re.MULTILINE)  # remove weird reddit separator
                 body = re.sub(r"( )\1+", " ", body)  # remove duplicate spaces
                 body = re.sub(r"(\n)\1+", "\n", body)  # remove duplicate newlines
                 body = re.sub(r"(?<=^) +", "", body, flags=re.MULTILINE)  # remove spaces after a newline
-                if len(body) >= 100:
+                if len(body) >= lower_character_limit:
                     counter += 1
                     print(f"<|startoftext|>{body}<|endoftext|>{stamp}\n", file=out_file)
                     if counter % 1000 == 0:
@@ -146,5 +148,7 @@ def scrape_pushift(subreddit: str, comments=True):
 
 
 #scrape_pushift('Eve', comments=False)
-scrape_pushift('Eve', comments=True)
+#scrape_pushift('Eve', comments=True)
 scrape_pushift('shortstories', comments=False)
+scrape_pushift('HFY', comments=False)
+scrape_pushift('WritingPrompts', comments=True, lower_character_limit=1000)

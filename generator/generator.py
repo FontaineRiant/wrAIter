@@ -10,7 +10,7 @@ from generator import encoder
 
 class Generator:
     def __init__(self,
-                 model_name='sf-355M',
+                 model_name='355M',
                  seed=None,
                  nsamples=1,
                  batch_size=1,
@@ -57,6 +57,7 @@ class Generator:
             length = hparams.n_ctx // 2
         elif length > hparams.n_ctx:
             raise ValueError("Can't get samples longer than window size: %s" % hparams.n_ctx)
+        self.n_ctx = hparams.n_ctx
 
         config = tf.compat.v1.ConfigProto()
         if not gpu:

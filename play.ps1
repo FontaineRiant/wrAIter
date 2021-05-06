@@ -1,3 +1,3 @@
 .\venv\Scripts\Activate.ps1
-python main.py -cm scifi-355M
+python main.py -cm wp-355M
 PAUSE

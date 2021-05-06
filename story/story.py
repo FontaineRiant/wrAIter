@@ -47,13 +47,14 @@ class Story:
         self.act(prompt)
         return str(self)
 
-    def get_clipped_events(self, action=''):
+    def clean_input(self, action=''):
+        max_tokens = self.gen.n_ctx - self.gen.length
 
         # find the biggest memory that fits 1024 tokens
         mem_ind = 1
         while len(
                 self.gen.enc.encode(self.events[0] + '\n'.join(filter(None, self.events[-mem_ind:])) + '\n' + action
-                                    )) < 1024 - self.gen.length and len(self.events) - 1 >= mem_ind:
+                                    )) < max_tokens and len(self.events) - 1 >= mem_ind:
             mem_ind += 1
         mem_ind -= 1
 
@@ -90,14 +91,16 @@ class Story:
         return result.strip()
 
     def act(self, action: str = '', tries: int = 10):
-        input_str = self.get_clipped_events(action)
+        max_tries = tries
+        input_str = self.clean_input(action)
         result = self.gen.generate(input_str)
         result = self.clean_result(result)
 
         while (len(result) < 2
-               or SequenceMatcher(None, self.events[-1], result).ratio() > 0.9
+               or SequenceMatcher(None, self.events[-1], result).ratio() > 0.9 - 0.5 * (tries/max_tries)
                or '[CENSORED]' in result):
-            # reject censored output, empty outputs and repeating outputs
+            # reject censored output, empty outputs and repeating outputs (tolerance to repeats increases from 0.4 to
+            # 0.9 progressively with each try)
             if tries == 0:
                 return None
             tries -= 1

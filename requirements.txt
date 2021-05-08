@@ -46,6 +46,7 @@ packaging==20.9
 pandas==1.2.4
 phonemizer==2.2.2
 Pillow==8.2.0
+playsound==1.2.2
 praw==7.2.0
 prawcore==2.0.0
 prompt-toolkit==1.0.14

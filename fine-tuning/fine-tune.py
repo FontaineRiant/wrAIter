@@ -26,7 +26,7 @@ for filename in ['checkpoint','encoder.json','hparams.json','model.ckpt.data-000
                 f.write(chunk)
                 pbar.update(chunk_size)
 
-file_name = "./data/data-scifi.npz"
+file_name = "./data/data.npz"
 
 batch_size = 8
 learning_rate = 0.0001
@@ -43,7 +43,7 @@ gpt2.finetune(
     sample_every=10000,
     max_checkpoints=2,
     save_every=2000,
-    steps=steps, # 1000,
+    steps=steps,  # 1000,
     sample_length=100,
     overwrite=True
 )

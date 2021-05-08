@@ -9,7 +9,7 @@ The AI writer is powered by OpenAI's GPT-2 model. The included model has 355M pa
 and was fine-tuned to write fiction.
 
 ## Features
-* Play in [Google Colab](https://drive.google.com/drive/folders/14aex0HBP7EtUn6FGLfIoHe3gWmrIDZbI?usp=sharing) or locally,
+* Play in [Google Colab](https://colab.research.google.com/drive/1Bk0_cPV5M61TWWslDw-nNjmtGG3nBF4W?usp=sharing) or locally,
 * State-of-the-art Artificial Intelligence fine-tuned for the specific purpose of writing stories,
 * A high quality narrator AI that reads the story out loud (TTS),**
 * Two modes to build a story: alternating AI-human writing or chosing from AI generated options,
@@ -44,7 +44,7 @@ If you want to change from `wp-355M`, you'll have to edit `play.sh` and `play.ps
 
 The 335M models a just light enough to run on most GPUs (tested on a GTX 980), and are otherwise reasonably fast on CPUs,
 while trainable in a Google Colab notebook. I'll start training a 774M model whenever GPUs become affordable again.
-* `wp-355M` (coming soon) is best for all kinds of fictional stories. It was tuned on a dataset of 82425255 words from r/WritingPrompts comments (>1000 characters only, about 2 years worth of short stories).
+* `wp-355M` (coming soon) is best for all kinds of fictional stories. It was tuned on a dataset of 88,569,196 words from r/WritingPrompts comments (>1000 characters only, about 2 years worth of short stories).
 * `hfy-355M` (coming soon) is specialized in science-fiction. It was trained on every post from r/HFY (sci-fi short stories where humanity is the hero).
 * `shortstories-355M` (coming soon?) was trained on every post from r/shortstories. It has the same kind of content as r/WritingPrompts, but with fewer stories of (maybe?) higher quality.
 * `eve-355M` (coming soon) is an experiment trained on all comments from 01/2020 to 05/2021 and all posts from r/Eve.
@@ -56,11 +56,11 @@ The reddit datasets were collected using `fine-tuning/scrape.py` which calls the
 ## FAQ
 _Does this thing respect my privacy?_
 
-Yes, wrAIter only needs to connect to the internet to download the TTS model and to install python packages. It doesn't upload anything, and only saves stories on your hard drive if you explicitly ask it to. Keep in mind that the Colab notebook runs on Google's server, on which they have full control, so I offer no guarantees there.
+Yes, wrAIter only needs to connect to the internet to download the TTS model and to install python packages. It doesn't upload anything, and only saves stories on your hard drive if you explicitly ask it to. To play sound, the last played wave file is also stored on your machine. Keep in mind that the Colab notebook runs on Google's server, on which they have full control, so I offer no guarantees there.
 
 _How should I write things in a way that the AI understands?_
 
-You aren't in a dialog with an AI, you're just writing parts of a story, except the autocompletion tries to guess the next 40 words. Trying to talk to it will just throw it off. Write as if you were the narrator.
+You aren't in a dialog with an AI, you're just writing parts of a story, except the autocompletion tries to guess the next 40 words. Trying to talk to it will just throw it off. Write as if you were the narrator. Avoid typos, the 355M models don't react well to them (use `/revert` to cancel an input and rewrite it).
 
 _The AI is repeating itself, help!_
 

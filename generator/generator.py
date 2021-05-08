@@ -15,8 +15,8 @@ class Generator:
                  nsamples=1,
                  batch_size=1,
                  length=40,
-                 temperature=0.7,  # 0.4,
-                 top_k=0,
+                 temperature=0.5,  # 0.4,
+                 top_k=100,
                  top_p=0.9,
                  models_dir='models',
                  gpu=True):
@@ -84,6 +84,7 @@ class Generator:
         self.sess.close()
 
     def generate(self, prompt: str):
+        # prompt = '<|endoftext|>' + prompt  # TODO: uncomment once the model is trained
         context_tokens = self.enc.encode(prompt)
         generated = 0
         for _ in range(self.nsamples // self.batch_size):

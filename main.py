@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-import sys
 from difflib import SequenceMatcher
 
 from PyInquirer import style_from_dict, Token, prompt
@@ -28,8 +27,9 @@ class Game:
             Token.Question: '',
         })
         self.story = Story(self.gen, censor=args.censor)
-        self.voice = 1.10
+        self.voice = 1.05
         self.loop = self.loop_text
+        self.voice_on_next_loop = False
 
         print("""
 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
@@ -115,10 +115,8 @@ class Game:
 
         print("Type /help for a list of commands.")
         print("Generating story ...")
-        result = self.story.new(context, custom_prompt)
-
-        # tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
-        tts.deep_play(result, self.voice)
+        self.story.new(context, custom_prompt)
+        self.voice_on_next_loop = True
 
     def load_prompt(self):
         menu = [{
@@ -149,6 +147,11 @@ class Game:
 
     def loop_text(self):
         print(self.story)
+        if self.voice_on_next_loop:
+            # tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
+            tts.deep_play(str(self.story), self.voice)
+            self.voice_on_next_loop = False
+
         while True:
             user_input = input('\n> ').strip()
 
@@ -184,7 +187,7 @@ class Game:
                         pass
                     elif action[-1] in [".", "?", "!"] or action.endswith('."') or action.endswith(
                             '?"') or action.endswith('!"'):
-                        action = action
+                        pass
                     else:
                         action = action + "."
 
@@ -204,7 +207,8 @@ class Game:
         print(self.story)
         while True:
             print()
-            choices = ['< more >'] + self.story.gen_n_results(3) + ['< revert >', '< menu >']
+            results = self.story.gen_n_results(3)
+            choices = ['< more >'] + results + ['< revert >', '< menu >']
             question = [
                 {
                     'type': list_input_type,
@@ -281,7 +285,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='wrAIter: AI writing assistant with a voice')
     parser.add_argument('-j', '--jupyter', action='store_true',
                         default=False,
-                        help='jupyter compatibility mode (replaces arrow key selection)')
+                        help='jupyter compatibility mode (replaces arrow key selection, disables audio)')
     parser.add_argument('-c', '--censor', action='store_true',
                         default=False,
                         help='adds a censor to the generator')

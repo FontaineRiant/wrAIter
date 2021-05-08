@@ -46,6 +46,7 @@ packaging==20.9
 pandas==1.2.4
 phonemizer==2.2.2
 Pillow==8.2.0
+playsound==1.2.2
 praw==7.2.0
 prawcore==2.0.0
 prompt-toolkit==1.0.14
@@ -74,6 +75,7 @@ tabulate==0.8.9
 termcolor==1.1.0
 threadpoolctl==2.1.0
 toposort==1.6
+torch==1.7.1+cu101
 tqdm==4.31.1
 tracery==0.1.1
 twitter==1.18.0

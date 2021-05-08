@@ -7,13 +7,12 @@ from generator.generator import Generator
 
 SAVE_PATH = "./saved_stories/"
 
-
 with open("./story/censored_words.txt", "r") as f:
     censored_words = [l.strip(" \n\r,.") for l in f.readlines()]
 
 
 class Story:
-    def __init__(self, gen: Generator, censor:bool):
+    def __init__(self, gen: Generator, censor: bool):
         self.censor = censor
         self.gen = gen
         self.events = []
@@ -72,6 +71,8 @@ class Story:
     def clean_result(self, result):
         result = result.strip()
 
+        result = re.sub(r'<\|endoftext\|>[\s\S]*$', '', result)  # parse endoftext token (it happens)
+
         # remove sentences that are cut in the middle
         end_of_sentence_index = next(iter([i for i, j in list(enumerate(result, 1))[::-1] if j in '.:?!']),
                                      len(result))
@@ -85,7 +86,7 @@ class Story:
             result += '"'
 
         if self.censor:
-            result = re.sub(r'|'.join(rf'(\b{re.escape(s)}\b)'for s in censored_words), '[CENSORED]', result,
+            result = re.sub(r'|'.join(rf'(\b{re.escape(s)}\b)' for s in censored_words), '[CENSORED]', result,
                             flags=re.IGNORECASE)
 
         return result.strip()
@@ -97,7 +98,7 @@ class Story:
         result = self.clean_result(result)
 
         while (len(result) < 2
-               or SequenceMatcher(None, self.events[-1], result).ratio() > 0.9 - 0.5 * (tries/max_tries)
+               or SequenceMatcher(None, self.events[-1], result).ratio() > 0.9 - 0.5 * (tries / max_tries)
                or '[CENSORED]' in result):
             # reject censored output, empty outputs and repeating outputs (tolerance to repeats increases from 0.4 to
             # 0.9 progressively with each try)
@@ -111,11 +112,21 @@ class Story:
         self.events.append(result)
         return result
 
-    def gen_n_results(self, n: int = 3):
+    def gen_n_results(self, n: int = 3, tries: int = 30):
         res = []
-        for i in range(0, n):
+        max_tries = tries
+
+        while len(res) < n and tries > 0:
             result = self.gen.generate(str(self))
-            res.append(self.clean_result(result))
+
+            if not (len(result) < 2
+                    or SequenceMatcher(None, self.events[-1], result).ratio() > 0.9 - 0.5 * (tries / max_tries)
+                    or '[CENSORED]' in result
+                    or result in res):
+                res.append(self.clean_result(result))
+
+            tries -= 1
+
         return res
 
     def __str__(self):

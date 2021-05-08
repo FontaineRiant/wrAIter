@@ -6,7 +6,6 @@ import json
 import codecs
 import praw
 import requests
-import gpt_2_simple as gpt2
 
 
 def scrape_twitter(target_user_handle: str, exclude_replies: bool = False):
@@ -99,14 +98,14 @@ def scrape_subreddit(subreddit: str, exclude_comments=False):
         print("Reddit content saved successfully.")
 
 
-def scrape_pushift(subreddit: str, comments=True, lower_character_limit=100, sample_limit=10000):
+def scrape_pushift(subreddit: str, comments=True, lower_character_limit=100, sample_limit=100000):
     type = 'comment' if comments else 'submission'
     print(f"Fetching reddit {type}s from r/{subreddit} ...")
     last_stamp = ''
     counter = 0
 
     with codecs.open(f'data/r_{subreddit}_{type}s.txt', "w+", "utf") as out_file:
-        while True:
+        while counter < sample_limit or sample_limit < 1:
             url = f'https://api.pushshift.io/reddit/{type}/search?subreddit={subreddit}&size=500' \
                   f'&before={last_stamp}&fields={"body" if comments else "selftext"},created_utc'
 
@@ -140,15 +139,15 @@ def scrape_pushift(subreddit: str, comments=True, lower_character_limit=100, sam
                 body = re.sub(r"(?<=^) +", "", body, flags=re.MULTILINE)  # remove spaces after a newline
                 if len(body) >= lower_character_limit:
                     counter += 1
-                    print(f"<|startoftext|>{body}<|endoftext|>{stamp}\n", file=out_file)
+                    print(f"<|endoftext|>{body}", file=out_file)
                     if counter % 1000 == 0:
                         print(f'Progress: {counter}')
 
         print(f"Reddit {type}s saved successfully.")
 
 
-#scrape_pushift('Eve', comments=False)
-#scrape_pushift('Eve', comments=True)
-scrape_pushift('shortstories', comments=False)
+#scrape_pushift('WritingPrompts', comments=True, lower_character_limit=1000)
+#scrape_pushift('Eve', comments=False, sample_limit=0)
+#scrape_pushift('Eve', comments=True, sample_limit=100000)
+#scrape_pushift('shortstories', comments=False)
 scrape_pushift('HFY', comments=False)
-scrape_pushift('WritingPrompts', comments=True, lower_character_limit=1000)

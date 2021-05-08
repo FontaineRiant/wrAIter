@@ -4,7 +4,6 @@ from difflib import SequenceMatcher
 
 from PyInquirer import style_from_dict, Token, prompt
 
-from audio import tts
 from story import grammars
 from story.story import Story
 from story.story import SAVE_PATH
@@ -147,7 +146,7 @@ class Game:
 
     def loop_text(self):
         print(self.story)
-        if self.voice_on_next_loop:
+        if self.voice_on_next_loop and not args.jupyter:
             # tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
             tts.deep_play(str(self.story), self.voice)
             self.voice_on_next_loop = False
@@ -161,8 +160,9 @@ class Game:
                 if len(self.story.events) < 4:
                     result = self.story.new(self.story.events[0], self.story.events[1])
                     print(result)
-                    # tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
-                    tts.deep_play(result, self.voice)
+                    if not args.jupyter:
+                        # tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
+                        tts.deep_play(result, self.voice)
                 else:
                     self.story.events = self.story.events[:-2]
                     print("Last action reverted.")
@@ -196,12 +196,13 @@ class Game:
                     print("--- The model failed to produce an decent output. Try something else.")
                 else:
                     print(result)
-                    similarity = SequenceMatcher(None, action, result).ratio()
-                    if similarity > 0.5:
-                        # don't repeat action if the model repeated it in result
-                        tts.deep_play(result, self.voice)
-                    else:
-                        tts.deep_play(action + " " + result, self.voice)
+                    if not args.jupyter:
+                        similarity = SequenceMatcher(None, action, result).ratio()
+                        if similarity > 0.5:
+                            # don't repeat action if the model repeated it in result
+                            tts.deep_play(result, self.voice)
+                        else:
+                            tts.deep_play(action + " " + result, self.voice)
 
     def loop_choice(self):
         print(self.story)
@@ -226,7 +227,8 @@ class Game:
                 if len(self.story.events) < 4:
                     result = self.story.new(self.story.events[0], self.story.events[1])
                     print(result)
-                    tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
+                    if not args.jupyter:
+                        tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
                 else:
                     self.story.events = self.story.events[:-1]
                     print("Last action reverted.")
@@ -237,7 +239,8 @@ class Game:
                 user_input = user_input.strip()
                 self.story.events.append(user_input)
                 print(user_input)
-                tts.deep_play(user_input, self.voice)
+                if not args.jupyter:
+                    tts.deep_play(user_input, self.voice)
 
     def model_prompt(self):
         models_dir = './models'
@@ -296,6 +299,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     list_input_type = 'rawlist' if args.jupyter else 'list'
+
+    if not args.jupyter:
+        from audio import tts
 
     if not os.path.exists('./saved_stories'):
         os.mkdir('./saved_stories')

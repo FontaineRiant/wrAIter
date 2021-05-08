@@ -28,8 +28,13 @@ path = Path(TTS.__file__).parent / "./.models.json"
 manager = ModelManager(path)
 model_path, config_path, _ = manager.download_model(model_name)
 vocoder_path, vocoder_config_path, _ = manager.download_model(vocoder_name)
-synthesizer = Synthesizer(tts_checkpoint=model_path, tts_config_path=config_path,
-                          vocoder_checkpoint=vocoder_path, vocoder_config=vocoder_config_path, use_cuda=True)
+try:
+    synthesizer = Synthesizer(tts_checkpoint=model_path, tts_config_path=config_path,
+                              vocoder_checkpoint=vocoder_path, vocoder_config=vocoder_config_path, use_cuda=True)
+except:
+    # try without CUDA
+    synthesizer = Synthesizer(tts_checkpoint=model_path, tts_config_path=config_path,
+                              vocoder_checkpoint=vocoder_path, vocoder_config=vocoder_config_path, use_cuda=False)
 
 tempdir = "./audio"
 for root, dirs, files in os.walk(tempdir):

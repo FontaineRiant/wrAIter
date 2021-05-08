@@ -78,6 +78,7 @@ toposort==1.6
 torch==1.7.1
 tqdm==4.31.1
 tracery==0.1.1
+TTS==0.0.13.1
 twitter==1.18.0
 typing-extensions==3.7.4.3
 umap-learn==0.4.6

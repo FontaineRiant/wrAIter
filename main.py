@@ -171,7 +171,7 @@ class Game:
                     result = self.story.new(self.story.events[0], self.story.events[1])
                     print(result)
                     if not args.jupyter:
-                        tts.deep_play('\n'.join(filter(None, self.story.events[1:])), self.voice)
+                        tts.deep_play('\n'.join(filter(None, self.story.events[2:])), self.voice)
                 else:
                     self.story.events = self.story.events[:-2]
                     print("Last action reverted.")
@@ -243,7 +243,7 @@ class Game:
                     result = self.story.new(self.story.events[0], self.story.events[1])
                     print(result)
                     if not args.jupyter:
-                        tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
+                        tts.deep_play('\n'.join(filter(None, self.story.events[2:])), self.voice)
                 else:
                     self.story.events = self.story.events[:-1]
                     print("Last action reverted.")

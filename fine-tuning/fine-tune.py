@@ -11,9 +11,10 @@ model = model_name
 subdir = os.path.join('models', model)
 if not os.path.exists(subdir):
     os.makedirs(subdir)
-#subdir = subdir.replace('\\','/') # needed for Windows
+# subdir = subdir.replace('\\','/') # needed for Windows
 
-for filename in ['checkpoint','encoder.json','hparams.json','model.ckpt.data-00000-of-00001', 'model.ckpt.index', 'model.ckpt.meta', 'vocab.bpe']:
+for filename in ['checkpoint','encoder.json','hparams.json','model.ckpt.data-00000-of-00001',
+                 'model.ckpt.index', 'model.ckpt.meta', 'vocab.bpe']:
 
     r = requests.get("https://openaipublic.blob.core.windows.net/gpt-2/" + subdir + "/" + filename, stream=True)
 
@@ -26,11 +27,11 @@ for filename in ['checkpoint','encoder.json','hparams.json','model.ckpt.data-000
                 f.write(chunk)
                 pbar.update(chunk_size)
 
-file_name = "./data/data.npz"
+file_name = "./data/sf.npz"
 
-batch_size = 8
+batch_size = 1
 learning_rate = 0.0001
-steps = 10000
+steps = 100000
 
 sess = gpt2.start_tf_sess()
 gpt2.finetune(
@@ -40,9 +41,10 @@ gpt2.finetune(
     batch_size=batch_size,
     learning_rate=learning_rate,
     model_name=model_name,
-    sample_every=10000,
-    max_checkpoints=2,
-    save_every=2000,
+    sample_every=5000,
+    sample_num=10,
+    max_checkpoints=20,
+    save_every=5000,
     steps=steps,  # 1000,
     sample_length=100,
     overwrite=True

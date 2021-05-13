@@ -57,7 +57,7 @@ def suppress_stdout():
 def deep_play(text, pitch=1):
     if pitch is None:
         pitch = 1
-    if pitch == 0:
+    if pitch == 0 or len(text) < 1:
         return
 
     text = text.replace('"', '')

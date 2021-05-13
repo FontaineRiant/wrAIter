@@ -6,6 +6,7 @@ import json
 import codecs
 import praw
 import requests
+import redditcleaner
 
 
 def scrape_twitter(target_user_handle: str, exclude_replies: bool = False):
@@ -104,7 +105,7 @@ def scrape_pushift(subreddit: str, comments=True, lower_character_limit=100, sam
     last_stamp = ''
     counter = 0
 
-    with codecs.open(f'data/r_{subreddit}_{type}s.txt', "w+", "utf") as out_file:
+    with codecs.open(f'data/r_{subreddit}_{type}s.txt', "w+", encoding='utf-8') as out_file:
         while counter < sample_limit or sample_limit < 1:
             url = f'https://api.pushshift.io/reddit/{type}/search?subreddit={subreddit}&size=500' \
                   f'&before={last_stamp}&fields={"body" if comments else "selftext"},created_utc'
@@ -131,9 +132,10 @@ def scrape_pushift(subreddit: str, comments=True, lower_character_limit=100, sam
             j['data'] = [v for v in j['data'] if ('body' if comments else 'selftext') in v]
 
             for body, stamp in [(c['body' if comments else 'selftext'], c['created_utc']) for c in j['data']]:
-                body = re.sub(r"^.*?https?://.*?$", "", body, flags=re.MULTILINE)  # remove urls
-                body = re.sub(r"^.*?&amp;#x200B;.*?$", "", body, flags=re.MULTILINE)  # remove weird reddit separator
-                body = re.sub(r"^.*?&amp;nbsp;.*?$", "", body, flags=re.MULTILINE)  # remove weird reddit separator
+                body = redditcleaner.clean(body, newline=False)
+                #body = re.sub(r"^.*?https?://.*?$", "", body, flags=re.MULTILINE)  # remove urls
+                #body = re.sub(r"^.*?&amp;#x200B;.*?$", "", body, flags=re.MULTILINE)  # remove weird reddit separator
+                #body = re.sub(r"^.*?&amp;nbsp;.*?$", "", body, flags=re.MULTILINE)  # remove weird reddit separator
                 body = re.sub(r"( )\1+", " ", body)  # remove duplicate spaces
                 body = re.sub(r"(\n)\1+", "\n", body)  # remove duplicate newlines
                 body = re.sub(r"(?<=^) +", "", body, flags=re.MULTILINE)  # remove spaces after a newline
@@ -146,8 +148,8 @@ def scrape_pushift(subreddit: str, comments=True, lower_character_limit=100, sam
         print(f"Reddit {type}s saved successfully.")
 
 
-#scrape_pushift('WritingPrompts', comments=True, lower_character_limit=1000)
-#scrape_pushift('Eve', comments=False, sample_limit=0)
-#scrape_pushift('Eve', comments=True, sample_limit=100000)
-#scrape_pushift('shortstories', comments=False)
+scrape_pushift('WritingPrompts', comments=True, lower_character_limit=1000)
+scrape_pushift('Eve', comments=False, sample_limit=0)
+scrape_pushift('Eve', comments=True, sample_limit=100000)
+scrape_pushift('shortstories', comments=False)
 scrape_pushift('HFY', comments=False)

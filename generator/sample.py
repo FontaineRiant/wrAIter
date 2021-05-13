@@ -2,6 +2,7 @@ import tensorflow as tf
 
 from generator import model
 
+
 def top_k_logits(logits, k):
     if k == 0:
         # no truncation
@@ -10,15 +11,16 @@ def top_k_logits(logits, k):
     def _top_k():
         values, _ = tf.nn.top_k(logits, k=k)
         min_values = values[:, -1, tf.newaxis]
-        return tf.where(
+        return tf.compat.v2.where(
             logits < min_values,
             tf.ones_like(logits, dtype=logits.dtype) * -1e10,
             logits,
         )
+
     return tf.cond(
-       tf.equal(k, 0),
-       lambda: logits,
-       lambda: _top_k(),
+        tf.equal(k, 0),
+        lambda: logits,
+        lambda: _top_k(),
     )
 
 
@@ -40,7 +42,8 @@ def top_p_logits(logits, p):
     )
 
 
-def sample_sequence(*, hparams, length, start_token=None, batch_size=None, context=None, temperature=1, top_k=0, top_p=1):
+def sample_sequence(*, hparams, length, start_token=None, batch_size=None, context=None, temperature=1, top_k=0,
+                    top_p=1):
     if start_token is None:
         assert context is not None, 'Specify exactly one of start_token and context!'
     else:

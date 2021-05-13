@@ -184,7 +184,7 @@
     "great_wizard" : ["#great# #magical_role# #fantasy_name#", "#fantasy_name# the #color.capitalize#"],
     "order" : ["order", "command", "remind", "direct", "demand"],
     "wizard_three" : "You are apprentice to the #great_wizard#. Before leaving on an errand, they #order.ed# you to never enter their #private# #chamber#... but your curiosity has gotten the best of you.\n\nAs you #go_near# the door, you #action#",
-    "wizard_prompt" : ["#wizard_one#-", "#wizard_two#-", "#wizard_three#-"],
+    "wizard_prompt" : ["#wizard_one#", "#wizard_two#", "#wizard_three#"],
     "wizard_context" : "You are #character_name#, a wizard #from_fantasy#. You have #wizard_item.a# and #wizard_item.a#.",
 
 
@@ -200,7 +200,7 @@
     "peasant_work" : ["feeding the #farm_animal_type#", "#field_verb# the fields", "harvesting the crops", "planting new crops", "#working# in the fields", "shearing the #woolen#", "milking the #milky#", "shoveling dung"], 
     "begin" : ["begin", "go about", "start", "get to", "get about"],
     "second_thing" : ["For a while, you have wanted to run away.", "In the distance, your master is yelling at some other workers.", "The sun beats down upon you.", "This has been your daily routine since you were young.", "You mutter a prayer to the #deity#."],
-    "peasant_prompt" : "You wake up #morning_time# and #begin# #peasant_work#. #second_thing# You #action#-",
+    "peasant_prompt" : "You wake up #morning_time# and #begin# #peasant_work#. #second_thing# You #action#",
     "peasant_context" : "You are #character_name#, a peasant #from_fantasy#. You have #peasant_item.a# and #peasant_item.a#.",
 
 
@@ -231,10 +231,10 @@
     "not_enough" : ["#isnt# #enough#", "#isnt# #enough# anymore"],
     "simple" : ["simple", "basic", "general", "standard"],
     "rogue_three" : "This #time# you decided that #simple# #stealing# #not_enough#. You long for a more ambitious goal: taking for yourself #whole_artifact#.\n\nYou #action#",
-    "rogue_prompt" : ["#rogue_one#-","#rogue_two#-", "#rogue_three#-"],
+    "rogue_prompt" : ["#rogue_one#","#rogue_two#", "#rogue_three#"],
     "rogue_context" : "You are #character_name#, a rogue #from_fantasy#. You have #rogue_item.a# and #rogue_item.a#.",
     
-    "character_prompt" : ["#rogue_prompt#", "#peasant_prompt#", "#wizard_prompt#", "#knight_prompt#", "#noble_prompt#"],
-    "character_context" : ["#rogue_context#", "#peasant_context#", "#wizard_context#", "#knight_context#", "#noble_context#"]
+    "prompt" : ["#rogue_prompt#", "#peasant_prompt#", "#wizard_prompt#", "#knight_prompt#", "#noble_prompt#"],
+    "context" : ["#rogue_context#", "#peasant_context#", "#wizard_context#", "#knight_context#", "#noble_context#"]
 }
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 from difflib import SequenceMatcher
 
 from PyInquirer import style_from_dict, Token, prompt
@@ -109,8 +111,8 @@ class Game:
             custom_prompt = ''
             context = ''
         else:
-            context = grammars.generate(action, "character", "context").strip()
-            custom_prompt = grammars.generate(action, "character", "prompt").strip()
+            context = grammars.generate(action, "context").strip()
+            custom_prompt = grammars.generate(action, "prompt").strip()
 
         print("Type /help for a list of commands.")
         print("Generating story ...")
@@ -147,7 +149,6 @@ class Game:
     def loop_text(self):
         print(self.story)
         if self.voice_on_next_loop and not args.jupyter:
-            # tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
             tts.deep_play(str(self.story), self.voice)
             self.voice_on_next_loop = False
 
@@ -161,8 +162,7 @@ class Game:
                     result = self.story.new(self.story.events[0], self.story.events[1])
                     print(result)
                     if not args.jupyter:
-                        # tts.deep_play('\n'.join(result.split("\n")[1:]), self.voice)
-                        tts.deep_play(result, self.voice)
+                        tts.deep_play('\n'.join(filter(None, self.story.events[1:])), self.voice)
                 else:
                     self.story.events = self.story.events[:-2]
                     print("Last action reverted.")
@@ -172,26 +172,28 @@ class Game:
                 print('Known commands:\n'
                       '/menu    go to main menu (it has a save option)\n'
                       '/revert  revert last action and response (if there are none, regenerate an intro)\n\n'
-                      'Tips:    Press Enter without typing anything to let the AI continue for you.\n'
-                      '         Start or finish your input with a dash ("-") to complete the last response\n'
-                      '         or let the AI complete your input. Example:\n'
-                      '         AI:    This sentence is probably not finished so\n'
-                      '         User:  -this will complete the sentence without inserting a newline. Also this-\n'
-                      '         AI:    will be interpreted by the AI a as sentence to complete.')
+                      'Tip:     Press Enter without typing anything to let the AI continue for you.'
+                    #'\n         Start or finish your input with a dash ("-") to complete the last response\n'
+                      #'         or let the AI complete your input. Example:\n'
+                      #'         AI:    This sentence is probably not finished so\n'
+                      #'         User:  -this will complete the sentence without inserting a newline. Also this-\n'
+                      #'         AI:    will be interpreted by the AI a as sentence to complete.'
+                      )
             else:
                 action = user_input.strip()
 
-                if action != '':
-                    # clean end of string
-                    if action[-1] == "-":
-                        pass
-                    elif action[-1] in [".", "?", "!"] or action.endswith('."') or action.endswith(
-                            '?"') or action.endswith('!"'):
-                        pass
-                    else:
-                        action = action + "."
+                #if action != '':
+                #    # clean end of string
+                #    if action[-1] == "-":
+                #        pass
+                #    elif action[-1] in [".", "?", "!"] or action.endswith('."') or action.endswith(
+                #            '?"') or action.endswith('!"'):
+                #        pass
+                #    else:
+                #        # action = action + "."
+                #        pass
 
-                result = self.story.act(action + '\n')
+                result = self.story.act('\n' + action)
                 if result is None:
                     print("--- The model failed to produce an decent output. Try something else.")
                 else:
@@ -206,6 +208,10 @@ class Game:
 
     def loop_choice(self):
         print(self.story)
+        if self.voice_on_next_loop and not args.jupyter:
+            tts.deep_play(str(self.story), self.voice)
+            self.voice_on_next_loop = False
+
         while True:
             print()
             results = self.story.gen_n_results(3)
@@ -237,7 +243,7 @@ class Game:
                 continue
             else:
                 user_input = user_input.strip()
-                self.story.events.append(user_input)
+                self.story.events.append('\n' + user_input)
                 print(user_input)
                 if not args.jupyter:
                     tts.deep_play(user_input, self.voice)

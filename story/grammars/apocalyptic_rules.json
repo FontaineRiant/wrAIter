@@ -83,6 +83,6 @@
   "headhunter_prompt" : "#headhunter_status# #headhunter_mission#\n\n#end_sentence#-",
   "headhunter_context" : "#[character_type:headhunter][item1:#headhunter_item.a#][item2:#headhunter_item.a#]apocalypse_context#",
 
-  "character_context" : ["#headhunter_context#", "#mutant_context#", "#scavenger_context#"],
-  "character_prompt" : ["#headhunter_prompt#", "#mutant_prompt#","#scavenger_prompt#"]
+  "context" : ["#headhunter_context#", "#mutant_context#", "#scavenger_context#"],
+  "prompt" : ["#headhunter_prompt#", "#mutant_prompt#","#scavenger_prompt#"]
 }

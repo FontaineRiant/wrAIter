@@ -16,7 +16,7 @@ and was fine-tuned to write fiction.
 * Save, load, continue and revert functions,
 * Randomly generated or custom prompts to start new stories.
 
-** wrAIter's voice feature only works on Windows for now, and definitely won't be available in Colab.
+** wrAIter's voice feature isn't available in Colab.
 
 ![](https://i.imgur.com/bOSnLJi.png)
 
@@ -44,8 +44,8 @@ If you want to change from `wp-355M`, you'll have to edit `play.sh` and `play.ps
 
 The 335M models a just light enough to run on most GPUs (tested on a GTX 980), and are otherwise reasonably fast on CPUs,
 while trainable in a Google Colab notebook. I'll start training a 774M model whenever GPUs become affordable again.
-* `wp-355M` (coming soon) is best for all kinds of fictional stories. It was tuned on a dataset of 88,569,196 words from r/WritingPrompts comments (>1000 characters only, about 2 years worth of short stories).
-* `hfy-355M` (coming soon) is specialized in science-fiction. It was trained on every post from r/HFY (sci-fi short stories where humanity is the hero).
+* `wp-355M` (default) is best for all kinds of fictional stories. It was tuned on a dataset of 88,147,095 words from r/WritingPrompts comments (>1000 characters only, about 2 years worth of short stories).
+* `hfy-355M` (coming soon) is specialized in science-fiction. It was trained on every post from r/HFY (sci-fi short stories where Humanity is the hero).
 * `shortstories-355M` (coming soon?) was trained on every post from r/shortstories. It has the same kind of content as r/WritingPrompts, but with fewer stories of (maybe?) higher quality.
 * `eve-355M` (coming soon) is an experiment trained on all comments from 01/2020 to 05/2021 and all posts from r/Eve.
 * `355M` is the medium-sized vanilla GPT-2 model. It wasn't fine-tuned, so it can write anything, not just stories. Great for experiments, not recommended for stories.

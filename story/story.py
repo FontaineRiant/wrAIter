@@ -6,6 +6,7 @@ from difflib import SequenceMatcher
 from generator.generator import Generator
 
 SAVE_PATH = "./saved_stories/"
+EVENT_SEP = ' '
 
 with open("./story/censored_words.txt", "r") as f:
     censored_words = [l.strip(" \n\r,.") for l in f.readlines()]
@@ -47,26 +48,27 @@ class Story:
         return str(self)
 
     def clean_input(self, action=''):
-        max_tokens = self.gen.n_ctx - self.gen.length
+        max_tokens = self.gen.n_ctx - self.gen.length - 7  # the 7 is for the <|endoftext|> token (it's badly encoded)
 
         # find the biggest memory that fits 1024 tokens
         mem_ind = 1
         while len(
-                self.gen.enc.encode(self.events[0] + '\n'.join(filter(None, self.events[-mem_ind:])) + '\n' + action
-                                    )) < max_tokens and len(self.events) - 1 >= mem_ind:
+                self.gen.enc.encode(self.events[0] + EVENT_SEP.join(filter(None, self.events[-mem_ind:])) + EVENT_SEP
+                                    + action)) < max_tokens and len(self.events) - 1 >= mem_ind:
             mem_ind += 1
         mem_ind -= 1
 
         events_clipped = self.events[0]
         while mem_ind > 0:
             if len(self.events) - 1 >= mem_ind and self.events[-mem_ind]:
-                events_clipped += '\n' + self.events[-mem_ind]
+                events_clipped += EVENT_SEP + self.events[-mem_ind]
             mem_ind -= 1
 
-        text = events_clipped + '\n' + action
-        # parse special character "-" as a newline cancellation
-        text = re.sub(r'(\n-)|(-\n)|(-$)', ' ', text)
-        return text
+        text = events_clipped + EVENT_SEP + action
+        # parse special character "-" as a separator cancellation
+        #text = re.sub(rf'({re.escape(EVENT_SEP)}-)|(-{re.escape(EVENT_SEP)})|(-$)', ' ', text)
+        text = re.sub(rf'{re.escape(EVENT_SEP)}\n', '\n', text)  # remove sep where there's alread a newline
+        return text.strip()
 
     def clean_result(self, result):
         result = result.strip()
@@ -118,19 +120,21 @@ class Story:
 
         while len(res) < n and tries > 0:
             result = self.gen.generate(str(self))
+            result = self.clean_result(result)
 
             if not (len(result) < 2
                     or SequenceMatcher(None, self.events[-1], result).ratio() > 0.9 - 0.5 * (tries / max_tries)
                     or '[CENSORED]' in result
                     or result in res):
-                res.append(self.clean_result(result))
+                res.append(result)
 
             tries -= 1
 
         return res
 
     def __str__(self):
-        text = "\n".join(filter(None, self.events))
+        text = EVENT_SEP.join(filter(None, self.events))
         # parse special character "-" as a newline cancellation
-        text = re.sub(r'(\n-)|(-\n)|(-$)', ' ', text)
+        #text = re.sub(rf'({re.escape(EVENT_SEP)}-)|(-{re.escape(EVENT_SEP)})|(-$)', ' ', text)
+        text = re.sub(rf'{re.escape(EVENT_SEP)}\n', '\n', text)  # remove sep where there's alread a newline
         return text

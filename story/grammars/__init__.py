@@ -22,12 +22,12 @@ def load_rules(setting):
     return rules
 
 
-def generate(setting, character_type, key):
+def generate(setting, key):
     """
     Provides a randomized prompt according to the grammar rules in <setting>_rules.json
     """
     rules = load_rules(setting)
-    artefact = apply_grammar("{}_{}".format(character_type, key), rules)
+    artefact = apply_grammar(key, rules)
     return artefact
 
 

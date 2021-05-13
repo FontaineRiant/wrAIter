@@ -1,1 +1,1 @@
-Model files should be here e.g. `/models/355M/model.ckpt.data-00000-of-00001`
+Model files should be here e.g. `/models/wp-355M/model.ckpt.data-00000-of-00001`

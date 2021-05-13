@@ -41,8 +41,17 @@ class Game:
 
     def play(self):
         while True:
-            choices = ['continue', 'load', 'new', 'voice', 'model'] + \
-                      ['switch to choice mode' if self.loop == self.loop_text else 'switch to text mode']
+            choices = []
+            if len([f for f in os.listdir(SAVE_PATH) if f.endswith('.json')]) > 0 or len(self.story.events) > 0:
+                choices.append('continue')
+            if len([f for f in os.listdir(SAVE_PATH) if f.endswith('.json')]) > 0:
+                choices.append('load')
+
+            choices.append('new')
+            if not args.jupyter:
+                choices.append('voice')
+
+            choices += ['model'] + ['switch to choice mode' if self.loop == self.loop_text else 'switch to text mode']
             if len(self.story.events) > 1:
                 choices.insert(1, 'save')
 

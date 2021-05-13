@@ -60,7 +60,7 @@ Yes, wrAIter only needs to connect to the internet to download the TTS model and
 
 _How should I write things in a way that the AI understands?_
 
-You aren't in a dialog with an AI, you're just writing parts of a story, except the autocompletion tries to guess the next 40 words. Trying to talk to it will just throw it off. Write as if you were the narrator. Avoid typos, the 355M models don't react well to them (use `/revert` to cancel an input and rewrite it).
+You aren't in a dialog with an AI, you're just writing parts of a story, except the autocompletion tries to guess the next 60 words. Trying to talk to it will just throw it off. Write as if you were the narrator. Avoid typos, the 355M models don't react well to them (use `/revert` to cancel an input and rewrite it).
 
 _The AI is repeating itself, help!_
 

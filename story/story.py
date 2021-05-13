@@ -32,10 +32,10 @@ class Story:
             return "Error save not found."
 
     def cont(self):
-        for path, subdirs, files in os.walk('./saved_stories'):
+        for path, subdirs, files in os.walk(SAVE_PATH):
             for name in reversed(sorted(files, key=lambda name: os.path.getmtime(os.path.join(path, name)))):
                 if name.endswith('.json'):
-                    return self.load(os.path.join(path, name))
+                    return self.load(name[:-5])
 
     def save(self, save_name: str):
         file_name = str(save_name) + ".json"

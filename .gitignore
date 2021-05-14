@@ -14,10 +14,6 @@ __pycache__
 .idea
 saved_stories/*
 
-story/grammars/*
-!story/grammars/__init__.py
-!story/grammars/scifi_rules.json
-!story/grammars/fantasy_rules.json
-!story/grammars/apocalyptic_rules.json
+story/grammars/_*.json
 
 custom_play.sh

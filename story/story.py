@@ -6,7 +6,6 @@ from difflib import SequenceMatcher
 from generator.generator import Generator
 
 SAVE_PATH = "./saved_stories/"
-EVENT_SEP = ' '
 
 with open("./story/censored_words.txt", "r") as f:
     censored_words = [l.strip(" \n\r,.") for l in f.readlines()]
@@ -53,7 +52,7 @@ class Story:
         # find the biggest memory that fits 1024 tokens
         mem_ind = 1
         while len(
-                self.gen.enc.encode(self.events[0] + EVENT_SEP.join(filter(None, self.events[-mem_ind:])) + EVENT_SEP
+                self.gen.enc.encode(self.events[0] + ''.join(filter(None, self.events[-mem_ind:]))
                                     + action)) < max_tokens and len(self.events) - 1 >= mem_ind:
             mem_ind += 1
         mem_ind -= 1
@@ -61,24 +60,19 @@ class Story:
         events_clipped = self.events[0]
         while mem_ind > 0:
             if len(self.events) - 1 >= mem_ind and self.events[-mem_ind]:
-                events_clipped += EVENT_SEP + self.events[-mem_ind]
+                events_clipped += self.events[-mem_ind]
             mem_ind -= 1
 
-        text = events_clipped + EVENT_SEP + action
-        # parse special character "-" as a separator cancellation
-        #text = re.sub(rf'({re.escape(EVENT_SEP)}-)|(-{re.escape(EVENT_SEP)})|(-$)', ' ', text)
-        text = re.sub(rf'{re.escape(EVENT_SEP)}\n', '\n', text)  # remove sep where there's alread a newline
+        text = events_clipped + action
         return text.strip()
 
     def clean_result(self, result):
-        result = result.strip()
-
         result = re.sub(r'<\|endoftext\|>[\s\S]*$', '', result)  # parse endoftext token (it happens)
 
         # remove sentences that are cut in the middle
         end_of_sentence_index = next(iter([i for i, j in list(enumerate(result, 1))[::-1] if j in '.:?!']),
                                      len(result))
-        result = result[:end_of_sentence_index].strip()
+        result = result[:end_of_sentence_index]
 
         # remove repeating substrings of 2+ characters at the end of result
         result = re.sub(r'([\s\S]{2,})([\s\S]?\1)+$', r'\1', result)
@@ -91,7 +85,7 @@ class Story:
             result = re.sub(r'|'.join(rf'(\b{re.escape(s)}\b)' for s in censored_words), '[CENSORED]', result,
                             flags=re.IGNORECASE)
 
-        return result.strip()
+        return result.strip('\n')
 
     def act(self, action: str = '', tries: int = 10):
         max_tries = tries
@@ -133,8 +127,5 @@ class Story:
         return res
 
     def __str__(self):
-        text = EVENT_SEP.join(filter(None, self.events))
-        # parse special character "-" as a newline cancellation
-        #text = re.sub(rf'({re.escape(EVENT_SEP)}-)|(-{re.escape(EVENT_SEP)})|(-$)', ' ', text)
-        text = re.sub(rf'{re.escape(EVENT_SEP)}\n', '\n', text)  # remove sep where there's alread a newline
+        text = ''.join(filter(None, self.events))
         return text

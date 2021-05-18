@@ -44,9 +44,9 @@ If you want to change from `wp-355M`, you'll have to edit `play.sh` and `play.ps
 
 The 335M models a just light enough to run on most GPUs (tested on a GTX 980), and are otherwise reasonably fast on CPUs,
 while trainable in a Google Colab notebook. I'll start training a 774M model whenever GPUs become affordable again.
-* `wp-355M` (default) is best for all kinds of fictional stories. It was tuned on a dataset of 88,147,095 words from r/WritingPrompts comments (>1000 characters only, about 2 years worth of short stories).
-* `hfy-355M` (coming soon) is specialized in science-fiction. It was trained on every post from r/HFY (sci-fi short stories where Humanity is the hero).
-* `shortstories-355M` (coming soon?) was trained on every post from r/shortstories. It has the same kind of content as r/WritingPrompts, but with fewer stories of (maybe?) higher quality.
+* `wp-355M` (default) is best for all kinds of fictional stories. It was tuned on a dataset of 88,147,095 words from r/WritingPrompts comments (100,000 stories >1000 characters, about 2 years worth of short stories).
+* `hfy-355M` (coming soon) is specialized in science-fiction. It was tuned on every post from r/HFY (sci-fi short stories where Humanity is the hero).
+* `shortstories-355M` (coming soon?) was trained on every post from r/shortstories. It has the same kind of content as r/WritingPrompts, but with fewer and longer stories of (maybe?) higher quality.
 * `eve-355M` (coming soon) is an experiment trained on all comments from 01/2020 to 05/2021 and all posts from r/Eve.
 * `355M` is the medium-sized vanilla GPT-2 model. It wasn't fine-tuned, so it can write anything, not just stories. Great for experiments, not recommended for stories.
 * `774M` is the lage vanilla GPT-2 model. Like `355M`, it wasn't fine-tuned. It produces better outputs but is much slower without a very good GPU.
@@ -56,11 +56,11 @@ The reddit datasets were collected using `fine-tuning/scrape.py` which calls the
 ## FAQ
 _Does this thing respect my privacy?_
 
-Yes, wrAIter only needs to connect to the internet to download the TTS model and to install python packages. It doesn't upload anything, and only saves stories on your hard drive if you explicitly ask it to. To play sound, the last played wave file is also stored on your machine. Keep in mind that the Colab notebook runs on Google's server, on which they have full control, so I offer no guarantees there.
+Yes, wrAIter only needs to connect to the internet to download the TTS model and to install python packages. It doesn't upload anything, and only saves stories on your hard drive if you explicitly ask it to. To play sound, the last played wave file is also stored on your machine. Keep in mind that the Colab notebook runs on Google's servers on which they have full control, so I offer no guarantees there.
 
 _How should I write things in a way that the AI understands?_
 
-You aren't in a dialog with an AI, you're just writing parts of a story, except the autocompletion tries to guess the next 60 words. Trying to talk to it will just throw it off. Write as if you were the narrator. Avoid typos, the 355M models don't react well to them (use `/revert` to cancel an input and rewrite it).
+You aren't in a dialog with an AI, you're just writing parts of a story, except there's autocompletion for the next ~60 words. Trying to talk to it will just throw it off. Write as if you were the narrator. Avoid typos, the 355M models don't react well to them (use `/revert` to cancel an input and rewrite it).
 
 _The AI is repeating itself, help!_
 
@@ -90,6 +90,9 @@ _Can I fine-tune the AI on a corpus of my choice?_
 
 Yes, the `fine-tuning` folder contains a few scripts that should let you do that if you know a bit of python. It's recommended you have at least 50 MB of raw text. Google Colab's servers are powerful enough to train OpenAI's 355M model.
 
+_wrAIter is a terrible name._
+
+Not a question, but yes it is. Still, with a French accent it's pronounced "writer".
 
 
 ## Credits

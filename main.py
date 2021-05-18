@@ -32,15 +32,17 @@ class Game:
         self.loop = self.loop_text
         self.voice_on_next_loop = False
 
-        print("""
+    def play(self):
+        while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
+
+            print("""
 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
 ███████████████████████████░███░█░▄▄▀█░▄▄▀█▄░▄█▄░▄█░▄▄█░▄▄▀███████████████████████████
 ███████████████████████████▄▀░▀▄█░▀▀▄█░▀▀░██░███░██░▄▄█░▀▀▄███████████████████████████
 ████████████████████████████▄█▄██▄█▄▄█░██░█▀░▀██▄██▄▄▄█▄█▄▄███████████████████████████
 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀""")
 
-    def play(self):
-        while True:
             choices = []
             if len([f for f in os.listdir(SAVE_PATH) if f.endswith('.json')]) > 0 or len(self.story.events) > 0:
                 choices.append('continue')
@@ -115,16 +117,16 @@ class Game:
             }]
             custom_input = prompt(questions, style=self.style)
             context = custom_input['context'].strip()
-            custom_prompt = custom_input['prompt'].strip()
+            custom_prompt = ' ' + custom_input['prompt'].strip()
         elif action == 'ai-generated':
             custom_prompt = ''
             context = ''
         else:
             context = grammars.generate(action, "context").strip()
-            custom_prompt = grammars.generate(action, "prompt").strip()
+            custom_prompt = ' ' + grammars.generate(action, "prompt").strip()
 
-        print("Type /help for a list of commands.")
         print("Generating story ...")
+        print("Type /help or /h to get a list of commands.")
         self.story.new(context, custom_prompt)
         self.voice_on_next_loop = True
 
@@ -156,20 +158,23 @@ class Game:
             print(f'Failed to save the game as {user_input}')
 
     def loop_text(self):
-        print(self.story)
+        self.pprint()
         if self.voice_on_next_loop and not args.jupyter:
             tts.deep_play(str(self.story), self.voice)
             self.voice_on_next_loop = False
 
         while True:
-            user_input = input('\n> ').strip()
+            self.pprint()
+            user_input = input('> ').strip()
 
-            if user_input == '/menu':
+            if user_input in ['/menu', '/m']:
                 return
-            elif user_input == '/revert':
+            elif user_input in ['/revert', '/r']:
                 if len(self.story.events) < 4:
                     result = self.story.new(self.story.events[0], self.story.events[1])
-                    print(result)
+                    # print(result)
+
+                    self.pprint(result)
                     if not args.jupyter:
                         tts.deep_play('\n'.join(filter(None, self.story.events[2:])), self.voice)
                 else:
@@ -179,52 +184,34 @@ class Game:
 
             elif user_input.startswith('/'):
                 print('Known commands:\n'
-                      '/menu    go to main menu (it has a save option)\n'
-                      '/revert  revert last action and response (if there are none, regenerate an intro)\n\n'
-                      'Tip:     Press Enter without typing anything to let the AI continue for you.'
-                    #'\n         Start or finish your input with a dash ("-") to complete the last response\n'
-                      #'         or let the AI complete your input. Example:\n'
-                      #'         AI:    This sentence is probably not finished so\n'
-                      #'         User:  -this will complete the sentence without inserting a newline. Also this-\n'
-                      #'         AI:    will be interpreted by the AI a as sentence to complete.'
-                      )
+                      '/h   /help     display this help\n'
+                      '/m   /menu     go to main menu (it has a save option)\n'
+                      '/r   /revert   revert last action and response (if there are none, regenerate an intro)\n'
+                      'Tip:           Press Enter without typing anything to let the AI continue for you.')
             else:
                 action = user_input.strip()
-
-                #if action != '':
-                #    # clean end of string
-                #    if action[-1] == "-":
-                #        pass
-                #    elif action[-1] in [".", "?", "!"] or action.endswith('."') or action.endswith(
-                #            '?"') or action.endswith('!"'):
-                #        pass
-                #    else:
-                #        # action = action + "."
-                #        pass
+                self.pprint('\n' + action)
 
                 result = self.story.act('\n' + action)
+                self.pprint()
                 if result is None:
-                    print("--- The model failed to produce an decent output. Try something else.")
+                    print("--- The model failed to produce an decent output after multiple tries. Try something else.")
                 else:
-                    print(result)
+                    # print('\x1b[1A\x1b[2K> ' + action + result)
                     if not args.jupyter:
-                        similarity = SequenceMatcher(None, action, result).ratio()
-                        if similarity > 0.5:
-                            # don't repeat action if the model repeated it in result
-                            tts.deep_play(result, self.voice)
-                        else:
-                            tts.deep_play(action + " " + result, self.voice)
+                        tts.deep_play(action + result, self.voice)
 
     def loop_choice(self):
-        print(self.story)
+        self.pprint()
         if self.voice_on_next_loop and not args.jupyter:
             tts.deep_play(str(self.story), self.voice)
             self.voice_on_next_loop = False
 
         while True:
-            print()
+            self.pprint()
             results = self.story.gen_n_results(3)
-            choices = ['< more >'] + results + ['< revert >', '< menu >']
+            results = {r.split('\n')[0]: r for r in results}
+            choices = ['< more >'] + list(results.keys()) + ['< revert >', '< menu >']
             question = [
                 {
                     'type': list_input_type,
@@ -241,21 +228,37 @@ class Game:
             elif user_input == '< revert >':
                 if len(self.story.events) < 4:
                     result = self.story.new(self.story.events[0], self.story.events[1])
-                    print(result)
+                    # print(result)
+                    self.pprint()
                     if not args.jupyter:
                         tts.deep_play('\n'.join(filter(None, self.story.events[2:])), self.voice)
                 else:
                     self.story.events = self.story.events[:-1]
-                    print("Last action reverted.")
-                    print(self.story.events[-1])
+                    # print("Last action reverted.")
+                    # print(self.story.events[-1])
+                    self.pprint()
             elif user_input == '< more >':
+                # print('\x1b[1A\x1b[2K\x1b[1A')
                 continue
             else:
-                user_input = user_input.strip()
+                user_input = results[user_input].strip()
                 self.story.events.append('\n' + user_input)
-                print(user_input)
+                # print('\x1b[1A\x1b[2K' + user_input)
+                # print(user_input)
+                self.pprint()
                 if not args.jupyter:
                     tts.deep_play(user_input, self.voice)
+
+    def pprint(self, highlight=None):
+        os.system('cls' if os.name == 'nt' else 'clear')
+
+        if highlight is None:
+            highlight = self.story.events[-1]
+            body = ''.join(filter(None, self.story.events[:-1]))
+        else:
+            body = str(self.story)
+
+        print(body + f'\033[96m{highlight}\033[00m')
 
     def model_prompt(self):
         models_dir = './models'
@@ -279,7 +282,7 @@ class Game:
             return
 
         print('Loading model ...')
-        # dirty fix: can't use GPU unless I find a way to free its memory, otherwise it just crashes
+        # dirty fix: disable GPU unless I find a way to free its memory, otherwise it just crashes
         self.gen = Generator(model_name, models_dir, gpu=False)
         self.story.gen = self.gen
 

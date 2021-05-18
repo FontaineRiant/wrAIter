@@ -84,23 +84,18 @@ def deep_play(text, pitch=1):
             wav = synthesizer.tts(text)
             synthesizer.save_wav(wav, file)
             change_wav_pitch(file, float(pitch))
+    except RuntimeError:
+        print('TTS failed, retrying witout CUDA')
+        synthesizer = Synthesizer(tts_checkpoint=model_path, tts_config_path=config_path,
+                                  vocoder_checkpoint=vocoder_path, vocoder_config=vocoder_config_path,
+                                  use_cuda=False)
+        with suppress_stdout():
+            wav = synthesizer.tts(text)
+            synthesizer.save_wav(wav, file)
+            change_wav_pitch(file, float(pitch))
     except:
-        if synthesizer.use_cuda:
-            try:
-                print('TTS failed, retrying witout CUDA')
-                synthesizer = Synthesizer(tts_checkpoint=model_path, tts_config_path=config_path,
-                                          vocoder_checkpoint=vocoder_path, vocoder_config=vocoder_config_path,
-                                          use_cuda=False)
-                with suppress_stdout():
-                    wav = synthesizer.tts(text)
-                    synthesizer.save_wav(wav, file)
-                    change_wav_pitch(file, float(pitch))
-            except:
-                print(f'Failed to TTS: [{text}]')
-                return
-        else:
-            print(f'Failed to TTS: [{text}]')
-            return
+        print(f'Failed to TTS: [{text}]')
+        return
 
     # os.system(f'tts --text "{text}" --model_name tts_models/en/ljspeech/tacotron2-DCA --vocoder_name
     # "vocoder_models/en/ljspeech/mulitband-melgan" --out_path {audio_dir} >{audio_dir}logs.txt 2>&1')

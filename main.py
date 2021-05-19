@@ -174,13 +174,13 @@ class Game:
                     result = self.story.new(self.story.events[0], self.story.events[1])
                     # print(result)
 
-                    self.pprint(result)
+                    self.pprint()
                     if not args.jupyter:
                         tts.deep_play('\n'.join(filter(None, self.story.events[2:])), self.voice)
                 else:
                     self.story.events = self.story.events[:-2]
-                    print("Last action reverted.")
-                    print(self.story.events[-1])
+                    # print("Last action reverted.")
+                    # print(self.story.events[-1])
 
             elif user_input.startswith('/'):
                 print('Known commands:\n'
@@ -188,6 +188,7 @@ class Game:
                       '/m   /menu     go to main menu (it has a save option)\n'
                       '/r   /revert   revert last action and response (if there are none, regenerate an intro)\n'
                       'Tip:           Press Enter without typing anything to let the AI continue for you.')
+                input('Press enter to continue.')
             else:
                 action = user_input.strip()
                 self.pprint('\n' + action)

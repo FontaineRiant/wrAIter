@@ -252,6 +252,9 @@ class Game:
 
     def pprint(self, highlight=None):
         os.system('cls' if os.name == 'nt' else 'clear')
+        if args.jupyter:
+            from IPython.display import clear_output
+            clear_output(wait=True)
 
         if highlight is None:
             highlight = self.story.events[-1]

@@ -96,7 +96,7 @@ Not a question, but yes it is. Still, with a French accent it's pronounced "writ
 
 _I read an article about AIdungeon and profanity. Doesn't this have the same issues?_
 
-No. First, wrAIter doesn't adjust based on your or other players' inputs. The model runs on your machine, so tempering with it would only affect your experience. Second, a censor is enabled by default, trashing and regenerating entire paragraphs if the model outputs a single banned word. It can be disabled in the launch options, giving you with the freedom of choice.
+No. First, wrAIter doesn't adjust based on your or other players' inputs. The model runs on your machine, so tempering with it would only affect your own experience. Second, a censor is enabled by default, trashing and regenerating entire paragraphs if the model outputs a single banned word. It can be disabled in the launch options, giving you the freedom of choice.
 
 
 ## Credits

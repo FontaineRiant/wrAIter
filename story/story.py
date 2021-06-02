@@ -85,7 +85,7 @@ class Story:
             result = re.sub(r'|'.join(rf'(\b{re.escape(s)}\b)' for s in censored_words), '[CENSORED]', result,
                             flags=re.IGNORECASE)
 
-        return result.strip('\n')
+        return result.rstrip('\n')
 
     def act(self, action: str = '', tries: int = 10):
         max_tries = tries

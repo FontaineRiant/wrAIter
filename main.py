@@ -12,12 +12,12 @@ from story.story import SAVE_PATH
 from generator.generator import Generator
 import argparse
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-
 
 class Game:
     def __init__(self):
-        self.gen = Generator(model_name=args.model[0])
+        self.gen = Generator(model_name=args.model[0], gpu=not args.cpugpt)
+        if not args.jupyter:
+            self.tts = Dub(gpu=not args.cputts)
         self.style = style_from_dict({
             Token.Separator: '#cc5454',
             Token.QuestionMark: '#673ab7 bold',
@@ -160,7 +160,7 @@ class Game:
     def loop_text(self):
         self.pprint()
         if self.voice_on_next_loop and not args.jupyter:
-            tts.deep_play(str(self.story), self.voice)
+            self.tts.deep_play(str(self.story), self.voice)
             self.voice_on_next_loop = False
 
         while True:
@@ -176,7 +176,7 @@ class Game:
 
                     self.pprint()
                     if not args.jupyter:
-                        tts.deep_play('\n'.join(filter(None, self.story.events[2:])), self.voice)
+                        self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])), self.voice)
                 else:
                     self.story.events = self.story.events[:-2]
                     # print("Last action reverted.")
@@ -191,27 +191,29 @@ class Game:
                 input('Press enter to continue.')
             else:
                 action = user_input.strip()
-                self.pprint('\n' + action)
+                if len(action) > 0:
+                    action = '\n' + action
+                self.pprint(action)
 
-                result = self.story.act('\n' + action)
+                result = self.story.act(action)
                 self.pprint()
                 if result is None:
                     print("--- The model failed to produce an decent output after multiple tries. Try something else.")
                 else:
                     # print('\x1b[1A\x1b[2K> ' + action + result)
                     if not args.jupyter:
-                        tts.deep_play(action + result, self.voice)
+                        self.tts.deep_play(action + result, self.voice)
 
     def loop_choice(self):
         self.pprint()
         if self.voice_on_next_loop and not args.jupyter:
-            tts.deep_play(str(self.story), self.voice)
+            self.tts.deep_play(str(self.story), self.voice)
             self.voice_on_next_loop = False
 
         while True:
             self.pprint()
             results = self.story.gen_n_results(3)
-            results = {r.split('\n')[0]: r for r in results}
+            results = {r.strip('\n').split('\n')[0]: r for r in results}
             choices = ['< more >'] + list(results.keys()) + ['< revert >', '< menu >']
             question = [
                 {
@@ -232,7 +234,7 @@ class Game:
                     # print(result)
                     self.pprint()
                     if not args.jupyter:
-                        tts.deep_play('\n'.join(filter(None, self.story.events[2:])), self.voice)
+                        self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])), self.voice)
                 else:
                     self.story.events = self.story.events[:-1]
                     # print("Last action reverted.")
@@ -248,7 +250,7 @@ class Game:
                 # print(user_input)
                 self.pprint()
                 if not args.jupyter:
-                    tts.deep_play(user_input, self.voice)
+                    self.tts.deep_play(user_input, self.voice)
 
     def pprint(self, highlight=None):
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -316,13 +318,19 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--model', action='store',
                         default=['scifi-355M'], nargs=1, type=str,
                         help='model name')
+    parser.add_argument('-t', '--cputts', action='store_true',
+                        default=False,
+                        help='force TTS to run on CPU')
+    parser.add_argument('-g', '--cpugpt', action='store_true',
+                        default=False,
+                        help='force text generation to run on CPU')
 
     args = parser.parse_args()
 
     list_input_type = 'rawlist' if args.jupyter else 'list'
 
     if not args.jupyter:
-        from audio import tts
+        from audio.tts import Dub
 
     if not os.path.exists('./saved_stories'):
         os.mkdir('./saved_stories')

@@ -3,7 +3,7 @@ import requests
 from tqdm import tqdm
 import gpt_2_simple as gpt2
 
-model_name = "355M"
+model_name = "1558M" # "355M" "774M"
 sess = gpt2.start_tf_sess()
 
 model = model_name

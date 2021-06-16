@@ -22,11 +22,12 @@ and was fine-tuned to write fiction.
 
 ## Local Installation
 0. (Optional) Set up CUDA 10.1 to enable hardware acceleration if your GPU can take it (4 GB VRAM).
-1. Install python 3.7 and eSpeak
-2. Download or clone this repository.
-3. Run `install.ps1` (windows powershell) or `install.sh` (shell script).
-4. Download a [model](https://drive.google.com/drive/folders/14aex0HBP7EtUn6FGLfIoHe3gWmrIDZbI?usp=sharing) (see next section) and place it in `models/`
-5. Play by running `play.ps1` (windows powershell) or `play.sh` (shell script).
+1. Install python 3.7 and eSpeak.
+2. Set the PHONEMIZER_ESPEAK_PATH environment variable to `C:\Program Files\eSpeak\command_line\espeak.exe` or wherever you installed it.
+3. Download or clone this repository.
+4. Run `install.ps1` (windows powershell) or `install.sh` (shell script).
+5. Download a [model](https://drive.google.com/drive/folders/14aex0HBP7EtUn6FGLfIoHe3gWmrIDZbI?usp=sharing) (see next section) and place it in `models/`
+6. Play by running `play.ps1` (windows powershell) or `play.sh` (shell script).
 
 ## Try it on Google Colab
 The Colab version doesn't have a voiced narrator and has issues with displaying text without truncating some of it. Use the local version if you want the full experience.

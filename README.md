@@ -21,7 +21,7 @@ and was fine-tuned to write fiction.
 ![](https://i.imgur.com/bOSnLJi.png)
 
 ## Local Installation
-0. (Optional) Set up CUDA 10.1 to enable hardware acceleration if your GPU can take it (4 GB VRAM).
+0. (Optional) Set up cudNN 8.0.4 and CUDA 10.1 to enable hardware acceleration if your GPU can take it (4 GB VRAM).
 1. Install python 3.7 and eSpeak.
 2. Set the PHONEMIZER_ESPEAK_PATH environment variable to `C:\Program Files\eSpeak\command_line\espeak.exe` or wherever you installed it.
 3. Download or clone this repository.

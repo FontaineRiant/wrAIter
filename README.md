@@ -21,12 +21,13 @@ and was fine-tuned to write fiction.
 ![](https://i.imgur.com/bOSnLJi.png)
 
 ## Local Installation
-0. (Optional) Set up CUDA 10.1 to enable hardware acceleration if your GPU can take it (4 GB VRAM).
-1. Install python 3.7
-2. Download or clone this repository.
-3. Run `install.ps1` (windows powershell) or `install.sh` (shell script).
-4. Download a [model](https://drive.google.com/drive/folders/14aex0HBP7EtUn6FGLfIoHe3gWmrIDZbI?usp=sharing) (see next section) and place it in `models/`
-5. Play by running `play.ps1` (windows powershell) or `play.sh` (shell script).
+0. (Optional) Set up cudNN 8.0.4 and CUDA 10.0 and 10.1 to enable hardware acceleration if your GPU can take it (4 GB VRAM).
+1. Install python 3.7 and eSpeak.
+2. Set the PHONEMIZER_ESPEAK_PATH environment variable to `C:\Program Files\eSpeak\command_line\espeak.exe` or wherever you installed it.
+3. Download or clone this repository.
+4. Run `install.ps1` (windows powershell) or `install.sh` (shell script).
+5. Download a [model](https://drive.google.com/drive/folders/14aex0HBP7EtUn6FGLfIoHe3gWmrIDZbI?usp=sharing) (see next section) and place it in `models/`
+6. Play by running `play.ps1` (windows powershell) or `play.sh` (shell script).
 
 ## Try it on Google Colab
 The Colab version doesn't have a voiced narrator and has issues with displaying text without truncating some of it. Use the local version if you want the full experience.
@@ -48,8 +49,6 @@ while trainable in a Google Colab notebook. I'll start training a 774M model whe
 * `hfy-355M` (coming soon) is specialized in science-fiction. It was tuned on every post from r/HFY (sci-fi short stories where Humanity is the hero).
 * `shortstories-355M` (coming soon?) was trained on every post from r/shortstories. It has the same kind of content as r/WritingPrompts, but with fewer and longer stories of (maybe?) higher quality.
 * `eve-355M` is an experiment trained on all comments from 01/2020 to 05/2021 and all posts from r/Eve.
-* `355M` is the medium-sized vanilla GPT-2 model. It wasn't fine-tuned, so it can write anything, not just stories. Great for experiments, not recommended for stories.
-* `774M` is the large vanilla GPT-2 model. Like `355M`, it wasn't fine-tuned. It produces better outputs but is much slower without a very good GPU.
 
 The reddit datasets were collected using `fine-tuning/scrape.py` which calls the [pushshift API](https://github.com/pushshift/api).
 

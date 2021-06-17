@@ -4,30 +4,24 @@ from contextlib import contextmanager
 import random
 import re
 import wave
-from playsound import playsound
 import TTS
 from TTS.utils.synthesizer import Synthesizer
 from TTS.utils.manage import ModelManager
-
-try:
-    # Use winsound if available. Playsound works, but can't interrupt a sound if you try to play another.
-    import winsound
-    WINSOUND = True
-except ImportError:
-    WINSOUND = False
+from pygame import mixer
 
 
 class Dub:
     def __init__(self, gpu=True):
+        mixer.init()
+        #self.model_name = "tts_models/en/ek1/tacotron2"
+        #self.vocoder_name = "vocoder_models/en/ek1/wavegrad"
         self.model_name = "tts_models/en/ljspeech/tacotron2-DCA"
-        #model_name = "tts_models/en/ljspeech/glow-tts"
-
         self.vocoder_name = "vocoder_models/en/ljspeech/multiband-melgan"
-        #vocoder_name = "vocoder_models/universal/libri-tts/wavegrad"
-        #vocoder_name = "vocoder_models/universal/libri-tts/fullband-melgan"
 
         self.path = Path(TTS.__file__).parent / "./.models.json"
         self.manager = ModelManager(self.path)
+        #print(self.manager.list_models())
+        #quit()
         self.model_path, self.config_path, _ = self.manager.download_model(self.model_name)
         self.vocoder_path, self.vocoder_config_path, _ = self.manager.download_model(self.vocoder_name)
         try:
@@ -97,13 +91,10 @@ class Dub:
             print(f'Failed to TTS: [{text}]')
             return
 
-        # os.system(f'tts --text "{text}" --model_name tts_models/en/ljspeech/tacotron2-DCA --vocoder_name
-        # "vocoder_models/en/ljspeech/mulitband-melgan" --out_path {audio_dir} >{audio_dir}logs.txt 2>&1')
-
-        if WINSOUND:
-            winsound.PlaySound(file, winsound.SND_ASYNC)
-        else:
-            playsound(file, block=True)
+        mixer.music.stop()
+        mixer.music.unload()
+        mixer.music.load(file)
+        mixer.music.play()
 
         # delete other temporary wav files while this one is being played
         for root, dirs, files in os.walk(self.tempdir):

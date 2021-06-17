@@ -16,8 +16,7 @@ import argparse
 class Game:
     def __init__(self):
         self.gen = Generator(model_name=args.model[0], gpu=not args.cpugpt)
-        if not args.jupyter:
-            self.tts = Dub(gpu=not args.cputts)
+        self.tts = None if args.jupyter else Dub(gpu=not args.cputts)
         self.style = style_from_dict({
             Token.Separator: '#cc5454',
             Token.QuestionMark: '#673ab7 bold',

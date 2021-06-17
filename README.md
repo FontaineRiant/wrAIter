@@ -22,8 +22,8 @@ and was fine-tuned to write fiction.
 
 ## Local Installation
 0. (Optional) Set up cudNN 8.0.4 and CUDA 10.0 and 10.1 to enable hardware acceleration if your GPU can take it (4 GB VRAM).
-1. Install python 3.7 and eSpeak.
-2. Set the PHONEMIZER_ESPEAK_PATH environment variable to `C:\Program Files\eSpeak\command_line\espeak.exe` or wherever you installed it.
+1. Install python 3.7, [Visual C++ 14.0 (or later)](https://visualstudio.microsoft.com/fr/visual-cpp-build-tools/) and eSpeak-ng.
+2. Set the PHONEMIZER_ESPEAK_PATH environment variable to `C:\Program Files\eSpeak NG\espeak-ng.exe` or wherever you installed it.
 3. Download or clone this repository.
 4. Run `install.ps1` (windows powershell) or `install.sh` (shell script).
 5. Download a [model](https://drive.google.com/drive/folders/14aex0HBP7EtUn6FGLfIoHe3gWmrIDZbI?usp=sharing) (see next section) and place it in `models/`

@@ -305,7 +305,6 @@ class Game:
 
 
 if __name__ == "__main__":
-
     # declare command line arguments
     parser = argparse.ArgumentParser(description='wrAIter: AI writing assistant with a voice')
     parser.add_argument('-j', '--jupyter', action='store_true',

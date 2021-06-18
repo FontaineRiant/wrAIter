@@ -51,56 +51,61 @@ class Dub:
                 sys.stdout = old_stdout
 
     def deep_play(self, text, pitch=1):
-        if pitch is None:
-            pitch = 1
-        if pitch == 0 or len(text) < 1:
-            return
-
-        text = text.replace('"', '')
-        text = text.replace('\n', ' ')
-        text = text.replace(':', '.')
-
-        # double periods make empty sentences and crashes
-        text = re.sub(r"[.!]\W*[.!]", ".", text)
-        text = re.sub(r"[.?]\W*[.]", "?", text)
-        text = re.sub(r"[.]\W*[.?]", "?", text)
-
-        # trailing periods creates an empty sentence and crashes
-        text = text.strip("\n>. ")
-        # final clean dot
-        if text[-1] not in ['.', '!', '?']:
-            text += '.'
-
-        file = os.path.join(self.tempdir, f'temp{random.randint(0, int(1e16))}.wav')
-
         try:
-            with self.suppress_stdout():
-                wav = self.synthesizer.tts(text)
-                self.synthesizer.save_wav(wav, file)
-                self.change_wav_pitch(file, float(pitch))
-        except RuntimeError:
-            print('TTS failed, retrying witout CUDA')
-            synthesizer = Synthesizer(tts_checkpoint=self.model_path, tts_config_path=self.config_path,
-                                      vocoder_checkpoint=self.vocoder_path, vocoder_config=self.vocoder_config_path,
-                                      use_cuda=False)
-            with self.suppress_stdout():
-                wav = synthesizer.tts(text)
-                synthesizer.save_wav(wav, file)
-                self.change_wav_pitch(file, float(pitch))
-        except:
-            print(f'Failed to TTS: [{text}]')
+            if pitch is None:
+                pitch = 1
+            if pitch == 0 or len(text) < 1:
+                return
+
+            text = text.replace('"', '')
+            text = text.replace('\n', ' ')
+            text = text.replace(':', '.')
+
+            # double periods make empty sentences and crashes
+            text = re.sub(r"[.!]\W*[.!]", ".", text)
+            text = re.sub(r"[.?]\W*[.]", "?", text)
+            text = re.sub(r"[.]\W*[.?]", "?", text)
+
+            # trailing periods creates an empty sentence and crashes
+            text = text.strip("\n>. ")
+            # final clean dot
+            if text[-1] not in ['.', '!', '?']:
+                text += '.'
+
+            file = os.path.join(self.tempdir, f'temp{random.randint(0, int(1e16))}.wav')
+
+            try:
+                with self.suppress_stdout():
+                    wav = self.synthesizer.tts(text)
+                    self.synthesizer.save_wav(wav, file)
+                    self.change_wav_pitch(file, float(pitch))
+            except RuntimeError:
+                print('TTS failed, retrying witout CUDA')
+                synthesizer = Synthesizer(tts_checkpoint=self.model_path, tts_config_path=self.config_path,
+                                          vocoder_checkpoint=self.vocoder_path, vocoder_config=self.vocoder_config_path,
+                                          use_cuda=False)
+                with self.suppress_stdout():
+                    wav = synthesizer.tts(text)
+                    synthesizer.save_wav(wav, file)
+                    self.change_wav_pitch(file, float(pitch))
+            except KeyboardInterrupt:
+                return
+            except:
+                print(f'Failed to TTS: [{text}]')
+                return
+
+            mixer.music.stop()
+            mixer.music.unload()
+            mixer.music.load(file)
+            mixer.music.play()
+
+            # delete other temporary wav files while this one is being played
+            for root, dirs, files in os.walk(self.tempdir):
+                for f in files:
+                    if f.endswith('.wav') and f not in file:
+                        os.remove(os.path.join(root, f))
+        except KeyboardInterrupt:
             return
-
-        mixer.music.stop()
-        mixer.music.unload()
-        mixer.music.load(file)
-        mixer.music.play()
-
-        # delete other temporary wav files while this one is being played
-        for root, dirs, files in os.walk(self.tempdir):
-            for f in files:
-                if f.endswith('.wav') and f not in file:
-                    os.remove(os.path.join(root, f))
 
     @staticmethod
     def change_wav_pitch(file, pitch=1.0):

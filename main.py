@@ -258,7 +258,7 @@ class Game:
 
         if highlight is None:
             highlight = self.story.events[-1]
-            body = ''.join(filter(None, self.story.events[:-1]))
+            body = ''.join(filter(None, self.story.events[:-1])).lstrip()
         else:
             body = str(self.story)
 

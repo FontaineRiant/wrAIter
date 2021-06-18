@@ -127,5 +127,5 @@ class Story:
         return res
 
     def __str__(self):
-        text = ''.join(filter(None, self.events))
+        text = ''.join(filter(None, self.events)).lstrip()
         return text

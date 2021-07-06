@@ -3,7 +3,7 @@ import requests
 from tqdm import tqdm
 import gpt_2_simple as gpt2
 
-model_name = "1558M" # "355M" "774M"
+model_name = "774M"  # "355M" "1558M"
 sess = gpt2.start_tf_sess()
 
 model = model_name
@@ -30,8 +30,8 @@ for filename in ['checkpoint','encoder.json','hparams.json','model.ckpt.data-000
 file_name = "./data/sf.npz"
 
 batch_size = 1
-learning_rate = 0.0001
-steps = 100000
+learning_rate = 0.00001
+steps = 800000
 
 sess = gpt2.start_tf_sess()
 gpt2.finetune(

@@ -2,8 +2,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-from difflib import SequenceMatcher
-
 from PyInquirer import style_from_dict, Token, prompt
 
 from story import grammars
@@ -11,6 +9,7 @@ from story.story import Story
 from story.story import SAVE_PATH
 from generator.generator import Generator
 import argparse
+import re
 
 
 class Game:
@@ -116,13 +115,16 @@ class Game:
             }]
             custom_input = prompt(questions, style=self.style)
             context = custom_input['context'].strip()
-            custom_prompt = ' ' + custom_input['prompt'].strip()
+            custom_prompt = custom_input['prompt'].strip()
         elif action == 'ai-generated':
             custom_prompt = ''
             context = ''
         else:
             context = grammars.generate(action, "context").strip()
-            custom_prompt = ' ' + grammars.generate(action, "prompt").strip()
+            custom_prompt = grammars.generate(action, "prompt").strip()
+
+        if context and custom_prompt:
+            custom_prompt = ' ' + custom_prompt
 
         print("Generating story ...")
         print("Type /help or /h to get a list of commands.")
@@ -191,7 +193,9 @@ class Game:
             else:
                 action = user_input.strip()
                 if len(action) > 0:
-                    action = '\n' + action
+                    action = ' ' + action
+                action = re.sub(r' *§ *', '\n', action)
+
                 self.pprint(action)
 
                 result = self.story.act(action)
@@ -243,8 +247,10 @@ class Game:
                 # print('\x1b[1A\x1b[2K\x1b[1A')
                 continue
             else:
+                #user_input = results[user_input].strip()
+                #self.story.events.append('\n' + user_input)
                 user_input = results[user_input].strip()
-                self.story.events.append('\n' + user_input)
+                self.story.events.append(' ' + user_input)
                 # print('\x1b[1A\x1b[2K' + user_input)
                 # print(user_input)
                 self.pprint()

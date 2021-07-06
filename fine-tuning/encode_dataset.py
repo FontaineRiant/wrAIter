@@ -18,4 +18,4 @@ with open('./data/r_Eve.txt', 'w', encoding='utf-8') as outfile:
 
 
 gpt2.encode_dataset(file_path='./data/r_HFY_submissions.txt', model_dir='../models',
-                    model_name='355M', out_path='data/r_HFY.npz')
+                    model_name='774M', out_path='data/r_HFY.npz')

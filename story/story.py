@@ -111,9 +111,10 @@ class Story:
     def gen_n_results(self, n: int = 3, tries: int = 30):
         res = []
         max_tries = tries
+        input_str = self.clean_input()
 
         while len(res) < n and tries > 0:
-            result = self.gen.generate(str(self))
+            result = self.gen.generate(input_str)
             result = self.clean_result(result)
 
             if not (len(result) < 2

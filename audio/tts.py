@@ -15,8 +15,10 @@ class Dub:
         mixer.init()
         #self.model_name = "tts_models/en/ek1/tacotron2"
         #self.vocoder_name = "vocoder_models/en/ek1/wavegrad"
-        self.model_name = "tts_models/en/ljspeech/tacotron2-DCA"
-        self.vocoder_name = "vocoder_models/en/ljspeech/multiband-melgan"
+        self.model_name = "tts_models/en/ljspeech/tacotron2-DDC"
+        self.vocoder_name = "vocoder_models/en/ljspeech/hifigan_v2"
+        #self.model_name = "tts_models/en/sam/tacotron-DDC"
+        #self.vocoder_name = "vocoder_models/en/sam/hifigan_v2"
 
         self.path = Path(TTS.__file__).parent / "./.models.json"
         self.manager = ModelManager(self.path)

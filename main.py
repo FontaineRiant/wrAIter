@@ -293,7 +293,7 @@ class Game:
 
         print('Loading model ...')
         # dirty fix: disable GPU unless I find a way to free its memory, otherwise it just crashes
-        self.gen = Generator(model_name, models_dir, gpu=False)
+        self.gen = Generator(model_name, models_dir)
         self.story.gen = self.gen
 
     def voice_prompt(self):
@@ -327,7 +327,7 @@ if __name__ == "__main__":
                         help='force TTS to run on CPU')
     parser.add_argument('-g', '--cpugpt', action='store_true',
                         default=False,
-                        help='force text generation to run on CPU')
+                        help='(borked) force text generation to run on CPU')
 
     args = parser.parse_args()
 

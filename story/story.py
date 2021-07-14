@@ -47,7 +47,7 @@ class Story:
         return str(self)
 
     def clean_input(self, action=''):
-        max_tokens = self.gen.n_ctx - self.gen.length - 7  # the 7 is for the <|endoftext|> token (it's badly encoded)
+        max_tokens = self.gen.generator.max_history_tokens - 7  # the 7 is for the <|endoftext|> token (it's badly encoded)
 
         # find the biggest memory that fits 1024 tokens
         mem_ind = 1
@@ -80,6 +80,11 @@ class Story:
         # close open quotes
         if result.count('"') % 2 != 0:
             result += '"'
+
+        result = result.replace("’", "'")
+        result = result.replace("`", "'")
+        result = result.replace("“", '"')
+        result = result.replace("”", '"')
 
         if self.censor:
             result = re.sub(r'|'.join(rf'(\b{re.escape(s)}\b)' for s in censored_words), '[CENSORED]', result,

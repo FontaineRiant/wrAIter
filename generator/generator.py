@@ -6,14 +6,13 @@ import tensorflow as tf
 from generator import model
 from generator import sample
 from generator import encoder
+from generator.gpt2generator import GPT2Generator
 
 
 class Generator:
     def __init__(self,
                  model_name='355M',
                  seed=None,
-                 nsamples=1,
-                 batch_size=1,
                  length=80,
                  temperature=0.75,
                  top_k=40,
@@ -40,58 +39,45 @@ class Generator:
          (i.e. contains the <model_name> folder)
         """
 
-        assert nsamples % batch_size == 0
 
         self.model_name = model_name
         self.models_dir = models_dir
-        self.nsamples = nsamples
-        self.batch_size = batch_size
         self.length = length
-        self.enc = encoder.get_encoder(self.model_name, self.models_dir)
+        self.top_k = top_k
+        self.top_p = top_p
+        self.temperature = temperature
+        self.rep_penalty = 1.2
+        self.rep_penalty_range = 512
+        self.rep_penalty_slope = 3.33
+        self.max_history = 1024  # max 2048 for gpt neo, 1024 for gpt-2, lower history to reduce (V)RAM usage
 
-        hparams = model.default_hparams()
-        with open(os.path.join(models_dir, model_name, 'hparams.json')) as f:
-            hparams.override_from_dict(json.load(f))
+        self.generator = GPT2Generator(
+                model_path=os.path.join(self.models_dir, self.model_name),
+                generate_num=self.length,
+                temperature=self.temperature,
+                top_k=self.top_k,
+                top_p=self.top_p,
+                repetition_penalty=self.rep_penalty,
+                repetition_penalty_range=self.rep_penalty_range,
+                repetition_penalty_slope=self.rep_penalty_slope,
+                max_history=self.max_history
+            )
 
-        if length is None:
-            length = hparams.n_ctx // 2
-        elif length > hparams.n_ctx:
-            raise ValueError("Can't get samples longer than window size: %s" % hparams.n_ctx)
-        self.n_ctx = hparams.n_ctx
-
-        config = tf.compat.v1.ConfigProto()
-        if not gpu:
-            # disable GPU cause it isn't fat enough
-            config = tf.compat.v1.ConfigProto(
-                device_count={'CPU': 1, 'GPU': 0},
-                allow_soft_placement=True,
-                log_device_placement=False)
-
-        self.sess = tf.compat.v1.Session(config=config)
-        self.context = tf.compat.v1.placeholder(tf.int32, [batch_size, None])
-        self.output = sample.sample_sequence(
-            hparams=hparams, length=length,
-            context=self.context,
-            batch_size=batch_size,
-            temperature=temperature, top_k=top_k, top_p=top_p
-        )
-
-        saver = tf.compat.v1.train.Saver()
-        ckpt = tf.train.latest_checkpoint(os.path.join(models_dir, model_name))
-        saver.restore(self.sess, ckpt)
+        self.enc = self.generator.tokenizer
 
     def __del__(self):
-        self.sess.close()
+        pass
 
     def generate(self, prompt: str):
         prompt = '<|endoftext|>' + prompt
-        context_tokens = self.enc.encode(prompt)
-        generated = 0
-        for _ in range(self.nsamples // self.batch_size):
-            out = self.sess.run(self.output, feed_dict={
-                self.context: [context_tokens for _ in range(self.batch_size)]
-            })[:, len(context_tokens):]
-            for i in range(self.batch_size):
-                generated += 1
-                text = self.enc.decode(out[i])
-                return text
+        result = self.generator.generate(
+            prompt,
+            '',
+            temperature=self.temperature,
+            top_k=self.top_k,
+            top_p=self.top_p,
+            repetition_penalty=self.rep_penalty,
+            repetition_penalty_range=self.rep_penalty_range,
+            repetition_penalty_slope=self.rep_penalty_slope
+        )
+        return result

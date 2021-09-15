@@ -352,7 +352,7 @@ if __name__ == "__main__":
                         default=False,
                         help='adds a censor to the generator')
     parser.add_argument('-m', '--model', action='store',
-                        default=['scifi-355M'], nargs=1, type=str,
+                        default=['gpt-neo-2.7B'], nargs=1, type=str,
                         help='model name')
     parser.add_argument('-t', '--cputts', action='store_true',
                         default=False,

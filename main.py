@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
+import json
 import os
+
+import story.story
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from PyInquirer import style_from_dict, Token, prompt
@@ -29,6 +33,7 @@ class Game:
         self.voice = 1.05
         self.loop = self.loop_text
         self.voice_on_next_loop = False
+        self.sample_hashes = []
 
     def play(self):
         while True:
@@ -171,30 +176,58 @@ class Game:
             if user_input in ['/menu', '/m']:
                 return
             elif user_input in ['/revert', '/r']:
-                if len(self.story.events) < 4:
+                self.tts.stop()
+                if len(self.story.events) <= 2:
                     result = self.story.new(self.story.events[0], self.story.events[1])
-                    # print(result)
-
                     self.pprint()
                     if not args.jupyter:
                         self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])), self.voice)
+                elif len(self.story.events) == 3:
+                    self.story.events = self.story.events[:-1]
                 else:
                     self.story.events = self.story.events[:-2]
-                    # print("Last action reverted.")
-                    # print(self.story.events[-1])
+            elif user_input in ['/n', '/next']:
+                if not self.sample_hashes:
+                    self.sample_hashes = [f[:-5] for f in os.listdir('samples') if f.endswith('.json')]
+
+                intro_hash = story.story.story_hash(str(self.story))
+
+                if intro_hash in self.sample_hashes:
+                    with open(f'samples/{intro_hash}.json', "r") as fp:
+                        text = json.load(fp)
+                    index = text.find(str(self.story))
+                    if index > -1:
+                        index += len(str(self.story))
+                        sep = '\n'
+                        min_len = 300
+                        action = text[index:]
+                        action = action[:min_len] + sep.join(action[min_len:].split(sep)[:1])
+                        self.story.events.append(action)
+                        self.pprint()
+                        if not args.jupyter:
+                            self.tts.deep_play(action, self.voice)
+                    else:
+                        print("The start of the story matches the dataset, but not the rest.")
+                        input('Press enter to continue.')
+                else:
+                    print("Couldn't find a story with an identical hash (filename) for the first 1000 characters.")
+                    input('Press enter to continue.')
 
             elif user_input.startswith('/'):
                 print('Known commands:\n'
                       '/h   /help     display this help\n'
                       '/m   /menu     go to main menu (it has a save option)\n'
                       '/r   /revert   revert last action and response (if there are none, regenerate an intro)\n'
-                      'Tip:           Press Enter without typing anything to let the AI continue for you.')
+                      '/n   /next     check ./samples for an identical story and keep reading from the dataset ('
+                      'undocumented)\n '
+                      'Tips:          Press Enter without typing anything to let the AI continue for you.'
+                      '               Use "~" or "§" in your inputs to insert a line break.')
                 input('Press enter to continue.')
             else:
                 action = user_input.strip()
                 if len(action) > 0:
                     action = ' ' + action
-                action = re.sub(r' *§ *', '\n', action)
+                action = re.sub(r' *[§|~] *', '\n', action)
 
                 self.pprint(action)
 
@@ -203,7 +236,6 @@ class Game:
                 if result is None:
                     print("--- The model failed to produce an decent output after multiple tries. Try something else.")
                 else:
-                    # print('\x1b[1A\x1b[2K> ' + action + result)
                     if not args.jupyter:
                         self.tts.deep_play(action + result, self.voice)
 
@@ -327,7 +359,7 @@ if __name__ == "__main__":
                         help='force TTS to run on CPU')
     parser.add_argument('-g', '--cpugpt', action='store_true',
                         default=False,
-                        help='(borked) force text generation to run on CPU')
+                        help='(broken) force text generation to run on CPU')
 
     args = parser.parse_args()
 

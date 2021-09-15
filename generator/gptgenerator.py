@@ -6,7 +6,7 @@ from typing import Union
 import torch
 import torch.nn.functional as F
 import re
-from .gpt2 import GPT2LMHeadModelExperimental
+from .gpt import GPT2LMHeadModelExperimental
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, GPTNeoForCausalLM
 #from .getconfig import settings, logger
 #from .utils import cut_trailing_sentence, output, clear_lines, format_result, use_ptoolkit
@@ -48,7 +48,8 @@ def memory_merge(prompt, context, tokenizer, maxHistory=1024):
         #logger.debug("Clamping the amount of prompt tokens.")
         context_tokens = prompt_tokens[-maxHistory:]
     else:
-        context_tokens = hackyEncode(tokenizer, context)
+        # context_tokens = hackyEncode(tokenizer, context)
+        context_tokens = tokenizer(context, verbose=False).input_ids
         context_tokens = context_tokens[-(maxHistory - len(prompt_tokens)):]
         # logger.debug('DECODED CONTEXT TOKENS: `%r`', tokenizer.convert_ids_to_tokens(context_tokens))
         prompt_tokens.extend(context_tokens)
@@ -137,7 +138,6 @@ def sample_sequence(
                 pasts = None
             else:
                 input_ids_next = next_token
-
             # Note: we could also use 'past' with GPT-2/Transfo-XL/XLNet/CTRL (cached hidden-states)
             model_kwargs = {"past": pasts, "use_cache": True}
             model_inputs = model.prepare_inputs_for_generation(generated.unsqueeze(0), **model_kwargs)
@@ -208,12 +208,12 @@ def truncate_multiple_sequences(seqs, max_len=100):
         longest.pop(0)
 
 
-class GPT2Generator:
+class GPTGenerator:
     def __init__(
             self, generate_num=60, temperature=0.4, top_k=40, top_p=0.9, dtype=DTYPE,
             model_path: Union[str, Path] = Path('models', 'pytorch-gpt2-xl-aid2-v5'),
             repetition_penalty=1, repetition_penalty_range=512, repetition_penalty_slope=3.33,
-            max_history=2048
+            max_history=2048, gpu=True
     ):
         self.generate_num = generate_num
         self.temp = temperature
@@ -242,7 +242,7 @@ class GPT2Generator:
         else:
             raise ValueError(f"model_path must be either str or Path, got {type(model_path)}")
 
-        self.device = torch.device("cuda" if self.dtype == torch.float16 else "cpu")
+        self.device = torch.device("cuda" if self.dtype == torch.float16 and gpu else "cpu")
         #logger.info(
         #    "Using device={}, checkpoint={}, dtype={}".format(self.device, str(self.checkpoint_path), self.dtype))
 
@@ -384,7 +384,7 @@ class GPT2Generator:
 
         # prompt = [self.prompt_replace(p) for p in prompt]
 
-        # logger.debug("AFTER PROMPT_REPLACE is: `%r`", repr(prompt))
+        # print(f"AFTER PROMPT_REPLACE is: '{prompt}'")
         assert (prompt + context)
 
         text = self.generate_raw(

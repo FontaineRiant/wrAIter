@@ -1,3 +1,3 @@
 source ./venv/Scripts/activate
-python main.py -cm wp-355M
-read -sn 1 -p "Press any key to continue.."
+python main.py --censor --model gpt-neo-2.7B-horni-ln --cputts
+read -sn 1 -p "Press any key to continue..."

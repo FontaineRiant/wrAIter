@@ -1,6 +1,9 @@
 models/*
 !models/models_go_here.md
 
+samples/*
+!samples/.gitkeep
+
 *.wav
 fine-tuning/checkpoint
 fine-tuning/data/*

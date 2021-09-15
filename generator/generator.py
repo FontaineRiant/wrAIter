@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
 import json
 import os
-import tensorflow as tf
 
-from generator import model
-from generator import sample
-from generator import encoder
-from generator.gpt2generator import GPT2Generator
+from generator.gptgenerator import GPTGenerator
 
 
 class Generator:
     def __init__(self,
-                 model_name='355M',
+                 model_name='gpt-neo-2.7B',
                  seed=None,
                  length=80,
-                 temperature=0.75,
+                 temperature=0.85,
                  top_k=40,
                  top_p=0.9,
                  models_dir='models',
@@ -39,7 +35,6 @@ class Generator:
          (i.e. contains the <model_name> folder)
         """
 
-
         self.model_name = model_name
         self.models_dir = models_dir
         self.length = length
@@ -51,7 +46,7 @@ class Generator:
         self.rep_penalty_slope = 3.33
         self.max_history = 1024  # max 2048 for gpt neo, 1024 for gpt-2, lower history to reduce (V)RAM usage
 
-        self.generator = GPT2Generator(
+        self.generator = GPTGenerator(
                 model_path=os.path.join(self.models_dir, self.model_name),
                 generate_num=self.length,
                 temperature=self.temperature,
@@ -60,7 +55,8 @@ class Generator:
                 repetition_penalty=self.rep_penalty,
                 repetition_penalty_range=self.rep_penalty_range,
                 repetition_penalty_slope=self.rep_penalty_slope,
-                max_history=self.max_history
+                max_history=self.max_history,
+                gpu=gpu
             )
 
         self.enc = self.generator.tokenizer

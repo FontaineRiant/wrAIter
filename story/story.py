@@ -2,13 +2,15 @@ import json
 import os
 import re
 from difflib import SequenceMatcher
+import hashlib
 
 from generator.generator import Generator
 
 SAVE_PATH = "./saved_stories/"
 
-with open("./story/censored_words.txt", "r") as f:
-    censored_words = [l.strip(" \n\r,.") for l in f.readlines()]
+
+def story_hash(string: str):
+    return hashlib.md5(bytes(string.lstrip()[:1000], 'utf-8')).hexdigest()
 
 
 class Story:
@@ -19,6 +21,9 @@ class Story:
 
         if not os.path.exists(SAVE_PATH):
             os.makedirs(SAVE_PATH)
+
+        with open("./story/censored_words.txt", "r") as f:
+            self.censored_words = [l.strip(" \n\r,.") for l in f.readlines()]
 
     def load(self, save_name: str):
         file_name = str(save_name) + ".json"
@@ -85,9 +90,10 @@ class Story:
         result = result.replace("`", "'")
         result = result.replace("“", '"')
         result = result.replace("”", '"')
+        result = result.replace("\n\n", '\n')
 
         if self.censor:
-            result = re.sub(r'|'.join(rf'(\b{re.escape(s)}\b)' for s in censored_words), '[CENSORED]', result,
+            result = re.sub(r'|'.join(rf'(\b{re.escape(s)}\b)' for s in self.censored_words), '[CENSORED]', result,
                             flags=re.IGNORECASE)
 
         return result.rstrip('\n')

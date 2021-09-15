@@ -15,10 +15,15 @@ class Dub:
         mixer.init()
         #self.model_name = "tts_models/en/ek1/tacotron2"
         #self.vocoder_name = "vocoder_models/en/ek1/wavegrad"
-        self.model_name = "tts_models/en/ljspeech/tacotron2-DDC"
-        self.vocoder_name = "vocoder_models/en/ljspeech/hifigan_v2"
+        #self.model_name = "tts_models/en/ljspeech/tacotron2-DDC"
+        #self.vocoder_name = "vocoder_models/en/ljspeech/hifigan_v2"
         #self.model_name = "tts_models/en/sam/tacotron-DDC"
         #self.vocoder_name = "vocoder_models/en/sam/hifigan_v2"
+        #self.model_name = "tts_models/en/ljspeech/tacotron2-DDC_ph"
+        #self.vocoder_name = "vocoder_models/en/ljspeech/univnet"
+        
+        self.model_name = "tts_models/en/ljspeech/fast_pitch"
+        self.vocoder_name = "vocoder_models/en/ljspeech/hifigan_v2"
 
         self.path = Path(TTS.__file__).parent / "./.models.json"
         self.manager = ModelManager(self.path)
@@ -51,6 +56,10 @@ class Dub:
                 yield
             finally:
                 sys.stdout = old_stdout
+
+    def stop(self):
+        mixer.music.stop()
+        mixer.music.unload()
 
     def deep_play(self, text, pitch=1):
         try:

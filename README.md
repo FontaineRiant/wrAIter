@@ -1,61 +1,39 @@
 ![](https://i.imgur.com/wbxNBBA.png)
 
 wrAIter is a voiced AI that writes stories while letting the user interact and add to the story.
-You can write a paragraph, making the AI write the next one, you add another, etc.
+You can write a paragraph, let the AI write the next one, you add another, etc.
 Or you can enable "choice mode" and let the AI make suggestions you can pick
 from for each paragraph.
 
-The AI writer is powered by OpenAI's GPT-2 model. The included model has 355M parameters
-and was fine-tuned to write fiction.
+The AI writer is powered by EleitherAI's GPT-NEO model, a replication of GPT-3.
+The suggested model has 2.7 billion parameters
+and was fine-tuned to write light novels.
 
 ## Features
-* Play in [Google Colab](https://colab.research.google.com/drive/1Bk0_cPV5M61TWWslDw-nNjmtGG3nBF4W?usp=sharing) or locally,
 * State-of-the-art Artificial Intelligence fine-tuned for the specific purpose of writing stories,
-* A high quality narrator AI that reads the story out loud (TTS),**
-* Two modes to build a story: alternating AI-human writing or chosing from AI generated options,
+* A high quality narrator AI that reads the story out loud (TTS)**,
+* Two modes to build a story: alternating AI-human writing or choosing from AI generated options,
 * Save, load, continue and revert functions,
 * Randomly generated or custom prompts to start new stories.
 
-** wrAIter's voice feature isn't available in Colab.
 
 ![](https://i.imgur.com/bOSnLJi.png)
 
 ## Local Installation
-0. (Optional) Set up cudNN 8.0.4 and CUDA 10.0 and 10.1 to enable hardware acceleration if your GPU can take it (4 GB VRAM).
-1. Install python 3.7, [Visual C++ 14.0 (or later)](https://visualstudio.microsoft.com/fr/visual-cpp-build-tools/) and eSpeak-ng.
+0. (Optional) Set up CUDA 11.1 to enable hardware acceleration if your GPU can take it.
+1. Install python 3.7, [Visual C++ 14.0 (or later)](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and [eSpeak-ng](https://github.com/espeak-ng/espeak-ng).
 2. Set the PHONEMIZER_ESPEAK_PATH environment variable to `C:\Program Files\eSpeak NG\espeak-ng.exe` or wherever you installed it.
 3. Download or clone this repository.
 4. Run `install.ps1` (windows powershell) or `install.sh` (shell script).
-5. Download a [model](https://drive.google.com/drive/folders/14aex0HBP7EtUn6FGLfIoHe3gWmrIDZbI?usp=sharing) (see next section) and place it in `models/`
-6. Play by running `play.ps1` (windows powershell) or `play.sh` (shell script).
+5. Download a GPT-NEO model and put its content in `./models/[model name]/`. Here's a link to [finetuneanon's light novel model](https://drive.google.com/file/d/1M1JY459RBIgLghtWDRDXlD4Z5DAjjMwg/view?usp=sharing). 
+6. Play by running `play.ps1` (windows powershell) or `play.sh` (shell script). You can also launch `main.py` directly with your own launch options (model selection, gpu/cpu).
 
-## Try it on Google Colab
-The Colab version doesn't have a voiced narrator and has issues with displaying text without truncating some of it. Use the local version if you want the full experience.
-
-1. Go the wrAIter's [Colab notebook](https://colab.research.google.com/drive/1Bk0_cPV5M61TWWslDw-nNjmtGG3nBF4W?usp=sharing)
-2. Runtime > Run all (ctrl+F9)
-3. Wait a couple of minutes for the main menu to appear in the last cell.
-
-
-## Models
-Pretrained models are available [here](https://drive.google.com/drive/folders/14aex0HBP7EtUn6FGLfIoHe3gWmrIDZbI?usp=sharing).
-The directory names are the model names. Download the directory of your choice and place it in `models/`.
-If you want to change from `wp-355M`, you'll have to edit `play.sh` and `play.ps1` and replace `wp-355M` with your model's name.
-
-
-The 335M models a just light enough to run on most GPUs (tested on a GTX 980), and are otherwise reasonably fast on CPUs,
-while trainable in a Google Colab notebook. I'll start training a 774M model whenever GPUs become affordable again.
-* `wp-355M` (default) is best for all kinds of fictional stories. It was tuned on a dataset of 88,147,095 words from r/WritingPrompts comments (100,000 stories of >1000 characters, about 2 years worth of short stories).
-* `hfy-355M` (coming soon) is specialized in science-fiction. It was tuned on every post from r/HFY (sci-fi short stories where Humanity is the hero).
-* `shortstories-355M` (coming soon?) was trained on every post from r/shortstories. It has the same kind of content as r/WritingPrompts, but with fewer and longer stories of (maybe?) higher quality.
-* `eve-355M` is an experiment trained on all comments from 01/2020 to 05/2021 and all posts from r/Eve.
-
-The reddit datasets were collected using `fine-tuning/scrape.py` which calls the [pushshift API](https://github.com/pushshift/api).
 
 ## FAQ
-_Does this thing respect my privacy?_
-
-Yes, wrAIter only needs to connect to the internet to download the TTS model and to install python packages. It doesn't upload anything, and only saves stories on your hard drive if you explicitly ask it to. To play sound, the last played wave file is also stored on your machine. Keep in mind that the Colab notebook runs on Google's servers on which they have full control, so I offer no guarantees there.
+_What kind of hardware do I need?_
+CPU inference is currently broken for text generation, and enabled by default for text-to-speech (launch option).
+So you'll need a GPU with at least 8 GB of VRAM. If you run into video memory issues, you can lower `max_history`
+in `./generator/generator.py` (maximum number of "words" that the AI can read before writing text).
 
 _How should I write things in a way that the AI understands?_
 
@@ -63,7 +41,7 @@ You aren't in a dialog with an AI, you're just writing parts of a story, except 
 
 _The AI is repeating itself, help!_
 
-There are checks in place to reduce this problem, but they're sometimes unavoidable. Here are a few tips:
+With this implementation, this shouldn't happen anymore. Still, here are a few tips:
 * You can switch to choice mode and hit `< more >` until the AI gives you something different.
 * You can also try go along with your story with a radical change in the action, ignoring the AI until it catches up with you.
 * You can `/revert` back to a point in the story before it started failing.
@@ -87,11 +65,16 @@ Until you hit 1024 words, longer stories get progressively better results.
 
 _Can I fine-tune the AI on a corpus of my choice?_
 
-Yes, the `fine-tuning` folder contains a few scripts that should let you do that if you know a bit of python. It's recommended you have at least 50 MB of raw text. Google Colab's servers are powerful enough to train OpenAI's 355M model.
+I didn't bother with fine-tuning with GPT-NEO. The model is just too large to fit into my machine or any free cloud GPU.
+So you're on your own.
 
 _wrAIter is a terrible name._
 
-Not a question, but yes it is. Still, with a French accent it's pronounced "writer".
+Yes it is. Still, with a French accent it's pronounced "writer".
+
+_Does this thing respect my privacy?_
+
+Yes, wrAIter only needs to connect to the internet to download the TTS model and to install python packages. It doesn't upload anything, and only saves stories on your hard drive if you explicitly ask it to. To play sound, the last played wave file is also stored on your machine.
 
 _I read an article about AIdungeon and profanity. Doesn't this have the same issues?_
 

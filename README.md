@@ -47,7 +47,7 @@ With this implementation, this shouldn't happen anymore. Still, here are a few t
 * You can `/revert` back to a point in the story before it started failing.
 * If all else fails, just start a new story.
 
-To make this happen less often, try not to be redundant or use the same word twice. GPT-2's whole schtick is to complete sequences, so it tends to latch onto a pattern whenever it sees one.
+To make this happen less often, try not to be redundant or use the same word twice. GPT's whole schtick is to complete sequences, so it tends to latch onto a pattern whenever it sees one.
 
 _Can I write in first person like in AIdungeon?_
 
@@ -82,6 +82,6 @@ No. First, wrAIter doesn't adjust based on your or other players' inputs. The mo
 
 
 ## Credits
-* [Latitude](https://github.com/Latitude-Archives/AIDungeon) for AIDungeon that I used as a prototype,
-* [OpenAI](https://github.com/openai/gpt-2) for GPT-2,
-* [Mozilla](https://github.com/mozilla) for the TTS models.
+* [Latitude](https://github.com/Latitude-Archives/AIDungeon) for AIDungeon that I used as a starting point,
+* [EleutherAI](https://www.eleuther.ai/projects/gpt-neo/) for GPT-NEO,
+* [coqui-ai](https://github.com/coqui-ai/TTS) for the TTS models.

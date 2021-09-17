@@ -38,7 +38,7 @@ in `./generator/generator.py` (maximum number of "words" that the AI can read be
 
 _How should I write things in a way that the AI understands?_
 
-You aren't in a dialog with an AI, you're just writing parts of a story, except there's autocompletion for the next ~60 words. Trying to talk to it will just throw it off. Write as if you were the narrator. Avoid typos, the 355M models don't react well to them (use `/revert` to cancel an input and rewrite it).
+You aren't in a dialog with an AI, you're just writing parts of a story, except there's autocompletion for the next ~60 words. Trying to talk to it will just throw it off. Write as if you were the narrator. Avoid typos.
 
 _The AI is repeating itself, help!_
 

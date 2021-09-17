@@ -31,6 +31,7 @@ and was fine-tuned to write light novels.
 
 ## FAQ
 _What kind of hardware do I need?_
+
 CPU inference is currently broken for text generation, and enabled by default for text-to-speech (launch option).
 So you'll need a GPU with at least 8 GB of VRAM. If you run into video memory issues, you can lower `max_history`
 in `./generator/generator.py` (maximum number of "words" that the AI can read before writing text).

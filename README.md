@@ -66,8 +66,8 @@ Until you hit 1024 words, longer stories get progressively better results.
 
 _Can I fine-tune the AI on a corpus of my choice?_
 
-I didn't bother with fine-tuning with GPT-NEO. The model is just too large to fit into my machine or any free cloud GPU.
-So you're on your own.
+I didn't bother with fine-tuning GPT-NEO. The model is just too large to fit into my machine or any free cloud GPU.
+So you're on your own if you want to try.
 
 _wrAIter is a terrible name._
 

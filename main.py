@@ -227,6 +227,10 @@ class Game:
                 action = user_input.strip()
                 if len(action) > 0:
                     action = ' ' + action
+
+                action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
+                action = re.sub('[\.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
+                                lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
                 action = re.sub(r' *[§|~] *', '\n', action)
 
                 self.pprint(action)
@@ -281,8 +285,8 @@ class Game:
             else:
                 #user_input = results[user_input].strip()
                 #self.story.events.append('\n' + user_input)
-                user_input = results[user_input].strip()
-                self.story.events.append(' ' + user_input)
+                user_input = results[user_input]#.strip(' ')
+                self.story.events.append(user_input)
                 # print('\x1b[1A\x1b[2K' + user_input)
                 # print(user_input)
                 self.pprint()

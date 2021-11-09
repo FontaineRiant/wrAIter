@@ -83,7 +83,7 @@ class Story:
         result = re.sub(r'([\s\S]{2,})([\s\S]?\1)+$', r'\1', result)
 
         # close open quotes
-        if result.count('"') % 2 != 0:
+        if (str(self) + result).count('"') % 2 != 0:
             result += '"'
 
         result = result.replace("’", "'")

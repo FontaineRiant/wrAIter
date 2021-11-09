@@ -31,13 +31,14 @@ and was fine-tuned to write light novels.
 
 ## FAQ
 _What kind of hardware do I need?_
+
 CPU inference is currently broken for text generation, and enabled by default for text-to-speech (launch option).
 So you'll need a GPU with at least 8 GB of VRAM. If you run into video memory issues, you can lower `max_history`
 in `./generator/generator.py` (maximum number of "words" that the AI can read before writing text).
 
 _How should I write things in a way that the AI understands?_
 
-You aren't in a dialog with an AI, you're just writing parts of a story, except there's autocompletion for the next ~60 words. Trying to talk to it will just throw it off. Write as if you were the narrator. Avoid typos, the 355M models don't react well to them (use `/revert` to cancel an input and rewrite it).
+You aren't in a dialog with an AI, you're just writing parts of a story, except there's autocompletion for the next ~60 words. Trying to talk to it will just throw it off. Write as if you were the narrator. Avoid typos.
 
 _The AI is repeating itself, help!_
 
@@ -65,8 +66,8 @@ Until you hit 1024 words, longer stories get progressively better results.
 
 _Can I fine-tune the AI on a corpus of my choice?_
 
-I didn't bother with fine-tuning with GPT-NEO. The model is just too large to fit into my machine or any free cloud GPU.
-So you're on your own.
+I didn't bother with fine-tuning GPT-NEO. The model is just too large to fit into my machine or any free cloud GPU.
+So you're on your own if you want to try.
 
 _wrAIter is a terrible name._
 

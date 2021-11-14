@@ -67,7 +67,10 @@ class Game:
                 'choices': choices
             }]
 
-            action = prompt(main_menu, style=self.style)['action']
+            action = {}
+            while not action:
+                action = prompt(main_menu, style=self.style)
+            action = action['action']
 
             if action == 'new':
                 self.new_prompt()
@@ -103,7 +106,12 @@ class Game:
             ] + ['ai-generated']
         }]
 
-        action = prompt(menu, style=self.style)['action']
+
+        action = {}
+        while not action:
+            action = prompt(menu, style=self.style)
+        action = action['action']
+
         if action == '< Back':
             return
         elif action == 'custom':
@@ -118,7 +126,12 @@ class Game:
                 'message': 'Type a short prompt. This is the start of your story.\n',
                 'name': 'prompt'
             }]
-            custom_input = prompt(questions, style=self.style)
+
+
+            custom_input = {}
+            while not custom_input:
+                custom_input = prompt(questions, style=self.style)
+
             context = custom_input['context'].strip()
             custom_prompt = custom_input['prompt'].strip()
         elif action == 'ai-generated':
@@ -145,7 +158,10 @@ class Game:
                                            key=lambda name: os.path.getmtime(os.path.join(SAVE_PATH, name + '.json')))
         }]
 
-        action = prompt(menu, style=self.style)['action']
+        action = {}
+        while not action:
+            action = prompt(menu, style=self.style)
+        action = action['action']
 
         if action != '< Back':
             self.story.load(action)
@@ -156,7 +172,12 @@ class Game:
             'message': "Type a name for your save file.",
             'name': 'user_input'
         }]
-        user_input = prompt(questions, style=self.style)['user_input']
+
+        user_input = {}
+        while not user_input:
+            user_input = prompt(questions, style=self.style)
+        user_input = user_input['user_input']
+
         try:
             self.story.save(user_input)
             print(f'Successfully saved {user_input}')
@@ -263,7 +284,10 @@ class Game:
                 }
             ]
 
-            user_input = prompt(question, style=self.style)['model_name']
+            user_input = {}
+            while not user_input:
+                user_input = prompt(question, style=self.style)
+            user_input = user_input['model_name']
 
             if user_input == '< menu >':
                 return
@@ -322,7 +346,10 @@ class Game:
             }
         ]
 
-        model_name = prompt(question, style=self.style)['model_name']
+        model_name = {}
+        while not model_name:
+            model_name = prompt(question, style=self.style)
+        model_name = model_name['model_name']
 
         if model_name == '< Back':
             return

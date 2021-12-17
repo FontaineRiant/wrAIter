@@ -14,6 +14,7 @@ from story.story import SAVE_PATH
 from generator.generator import Generator
 import argparse
 import re
+import readline
 
 
 class Game:
@@ -101,9 +102,9 @@ class Game:
             'type': list_input_type,
             'message': 'Choose a starting prompt',
             'name': 'action',
-            'choices': ['< Back', 'custom'] + [
+            'choices': ['< Back', 'custom'] + sorted([
                 f[:-11] for f in os.listdir('./story/grammars') if f.endswith('_rules''.json')
-            ] + ['ai-generated']
+            ]) + ['ai-generated']
         }]
 
 

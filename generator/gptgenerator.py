@@ -228,6 +228,9 @@ class GPTGenerator:
         self.max_history_tokens = max_history - generate_num
         self.stop_token = "<|endoftext|>"
 
+        if not gpu:
+            self.dtype = torch.float32
+
         if isinstance(model_path, str):
             self.checkpoint_path = model_path
             #logger.warning(

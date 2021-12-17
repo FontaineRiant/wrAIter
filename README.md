@@ -21,8 +21,8 @@ and was fine-tuned to write light novels.
 
 ## Local Installation
 0. (Optional) Set up CUDA 11.1 to enable hardware acceleration if your GPU can take it.
-1. Install python 3.7, [Visual C++ 14.0 (or later)](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and [eSpeak-ng](https://github.com/espeak-ng/espeak-ng).
-2. Set the PHONEMIZER_ESPEAK_PATH environment variable to `C:\Program Files\eSpeak NG\espeak-ng.exe` or wherever you installed it.
+1. Install python 3.7, [Visual C++ 14.0 (or later)](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (windows) and [eSpeak-ng](https://github.com/espeak-ng/espeak-ng).
+2. Set the PHONEMIZER_ESPEAK_PATH environment variable to `C:\Program Files\eSpeak NG\espeak-ng.exe` or wherever you installed it. (windows)
 3. Download or clone this repository.
 4. Run `install.ps1` (windows powershell) or `install.sh` (shell script).
 5. Download a GPT-NEO model and put its content in `./models/[model name]/`. Here's a link to [finetuneanon's light novel model](https://drive.google.com/file/d/1M1JY459RBIgLghtWDRDXlD4Z5DAjjMwg/view?usp=sharing). 
@@ -32,8 +32,8 @@ and was fine-tuned to write light novels.
 ## FAQ
 _What kind of hardware do I need?_
 
-CPU inference is currently broken for text generation, and enabled by default for text-to-speech (launch option).
-So you'll need a GPU with at least 8 GB of VRAM. If you run into video memory issues, you can lower `max_history`
+You'll need a GPU with at least 8 GB of VRAM, or a lot of patience and 28 GB of RAM (with the --cpugpt flag).
+If you run into video memory issues, you can lower `max_history`
 in `./generator/generator.py` (maximum number of "words" that the AI can read before writing text).
 
 _How should I write things in a way that the AI understands?_

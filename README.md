@@ -32,7 +32,7 @@ and was fine-tuned to write light novels.
 ## FAQ
 _What kind of hardware do I need?_
 
-You'll need a GPU with at least 8 GB of VRAM, or a lot of patience and 28 GB of RAM (with the --cpugpt flag).
+You'll need an NVIDIA GPU with at least 8 GB of VRAM, or a lot of patience and 28 GB of RAM (with the --cpugpt flag).
 If you run into video memory issues, you can lower `max_history`
 in `./generator/generator.py` (maximum number of "words" that the AI can read before writing text).
 

@@ -54,8 +54,8 @@ class Game:
                 choices.append('load')
 
             choices.append('new')
-            if not args.jupyter:
-                choices.append('voice')
+            # if not args.jupyter:
+            #     choices.append('voice')
 
             choices += ['model'] + ['switch to choice mode' if self.loop == self.loop_text else 'switch to text mode']
             if len(self.story.events) > 1:
@@ -361,6 +361,7 @@ class Game:
         self.story.gen = self.gen
 
     def voice_prompt(self):
+        # TODO: prompt voice sample instead of playback speed
         question = [
             {
                 'type': 'input',

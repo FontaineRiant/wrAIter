@@ -21,7 +21,7 @@ and was fine-tuned to write light novels.
 
 ## Local Installation
 0. (Optional) Set up CUDA 11.1 to enable hardware acceleration if your GPU can take it.
-1. Install python 3.7, [Visual C++ 14.0 (or later)](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (windows) and [eSpeak-ng](https://github.com/espeak-ng/espeak-ng).
+1. Install python 3.7
 2. Set the PHONEMIZER_ESPEAK_PATH environment variable to `C:\Program Files\eSpeak NG\espeak-ng.exe` or wherever you installed it. (windows)
 3. Download or clone this repository.
 4. Run `install.ps1` (windows powershell) or `install.sh` (shell script).

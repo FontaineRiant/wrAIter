@@ -78,7 +78,7 @@ class Dub:
                 with self.suppress_stdout():
                     wav = self.synthesizer.tts(text, speaker_wav=f'./audio/voices/{speaker_wav}.wav', language_name=language_idx)
                     self.synthesizer.save_wav(wav, file)
-                    #self.change_wav_pitch(file, float(pitch))
+                    self.change_wav_pitch(file, 1.05)
             except RuntimeError:
                 print('TTS failed, retrying witout CUDA')
                 synthesizer = Synthesizer(tts_checkpoint=self.model_path, tts_config_path=self.config_path,
@@ -87,7 +87,7 @@ class Dub:
                 with self.suppress_stdout():
                     wav = synthesizer.tts(text, speaker_wav=f'./audio/voices/{speaker_wav}.wav', language_name=language_idx)
                     synthesizer.save_wav(wav, file)
-                    #self.change_wav_pitch(file, float(pitch))
+                    self.change_wav_pitch(file, 1.05)
             except KeyboardInterrupt:
                 return
             except:

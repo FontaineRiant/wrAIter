@@ -12,6 +12,7 @@ and was fine-tuned to write light novels.
 ## Features
 * State-of-the-art Artificial Intelligence fine-tuned for the specific purpose of writing stories,
 * A high quality narrator AI that reads the story out loud (TTS)**,
+* Customizable voice: the narrator will sound like any voice sample of your choice,
 * Two modes to build a story: alternating AI-human writing or choosing from AI generated options,
 * Save, load, continue and revert functions,
 * Randomly generated or custom prompts to start new stories.
@@ -30,6 +31,13 @@ and was fine-tuned to write light novels.
 
 
 ## FAQ
+
+_How can I customize the narrator's voice?_
+
+Simply drop a WAV file into `audio/voices/`, then edit `play.sh` and/or `play.ps1` to add the `--voice "<name>"` option,
+where `<name>` is the file's name (without the .wav exension). The file should be a clean and short sample of a single
+person talking. A male a and a female voice samples are already included: "librispeech-f" and "librispeech-m"
+
 _What kind of hardware do I need?_
 
 You'll need an NVIDIA GPU with at least 8 GB of VRAM, or a lot of patience and 28 GB of RAM (with the --cpugpt flag).

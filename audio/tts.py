@@ -13,35 +13,24 @@ from pygame import mixer
 class Dub:
     def __init__(self, gpu=True):
         mixer.init()
-        #self.model_name = "tts_models/en/ek1/tacotron2"
-        #self.vocoder_name = "vocoder_models/en/ek1/wavegrad"
-        #self.model_name = "tts_models/en/ljspeech/tacotron2-DDC"
-        #self.vocoder_name = "vocoder_models/en/ljspeech/hifigan_v2"
-        #self.model_name = "tts_models/en/sam/tacotron-DDC"
-        #self.vocoder_name = "vocoder_models/en/sam/hifigan_v2"
-        #self.model_name = "tts_models/en/ljspeech/tacotron2-DDC_ph"
-        #self.vocoder_name = "vocoder_models/en/ljspeech/univnet"
-        
-        self.model_name = "tts_models/en/ljspeech/fast_pitch"
-        self.vocoder_name = "vocoder_models/en/ljspeech/hifigan_v2"
+
+        self.model_name = "tts_models/multilingual/multi-dataset/your_tts"
 
         self.path = Path(TTS.__file__).parent / "./.models.json"
         self.manager = ModelManager(self.path)
         #print(self.manager.list_models())
         #quit()
         self.model_path, self.config_path, _ = self.manager.download_model(self.model_name)
-        self.vocoder_path, self.vocoder_config_path, _ = self.manager.download_model(self.vocoder_name)
+        self.vocoder_path, self.vocoder_config_path, _ = None, None, None
         try:
             self.synthesizer = Synthesizer(tts_checkpoint=self.model_path, tts_config_path=self.config_path,
-                                      vocoder_checkpoint=self.vocoder_path, vocoder_config=self.vocoder_config_path,
-                                      use_cuda=gpu)
+                                           use_cuda=gpu)
         except:
             # try without CUDA
             self.synthesizer = Synthesizer(tts_checkpoint=self.model_path, tts_config_path=self.config_path,
-                                      vocoder_checkpoint=self.vocoder_path, vocoder_config=self.vocoder_config_path,
-                                      use_cuda=False)
+                                           use_cuda=False)
 
-        self.tempdir = "./audio"
+        self.tempdir = "./audio/temp"
         for root, dirs, files in os.walk(self.tempdir):
             for f in files:
                 if f.endswith('.wav'):
@@ -61,11 +50,9 @@ class Dub:
         mixer.music.stop()
         mixer.music.unload()
 
-    def deep_play(self, text, pitch=1):
+    def deep_play(self, text, speaker_wav):
         try:
-            if pitch is None:
-                pitch = 1
-            if pitch == 0 or len(text) < 1:
+            if speaker_wav is None:
                 return
 
             text = text.replace('"', '')
@@ -85,20 +72,22 @@ class Dub:
 
             file = os.path.join(self.tempdir, f'temp{random.randint(0, int(1e16))}.wav')
 
+            language_idx = "en"
+
             try:
                 with self.suppress_stdout():
-                    wav = self.synthesizer.tts(text)
+                    wav = self.synthesizer.tts(text, speaker_wav=f'./audio/voices/{speaker_wav}.wav', language_name=language_idx)
                     self.synthesizer.save_wav(wav, file)
-                    self.change_wav_pitch(file, float(pitch))
+                    #self.change_wav_pitch(file, float(pitch))
             except RuntimeError:
                 print('TTS failed, retrying witout CUDA')
                 synthesizer = Synthesizer(tts_checkpoint=self.model_path, tts_config_path=self.config_path,
                                           vocoder_checkpoint=self.vocoder_path, vocoder_config=self.vocoder_config_path,
                                           use_cuda=False)
                 with self.suppress_stdout():
-                    wav = synthesizer.tts(text)
+                    wav = synthesizer.tts(text, speaker_wav=f'./audio/voices/{speaker_wav}.wav', language_name=language_idx)
                     synthesizer.save_wav(wav, file)
-                    self.change_wav_pitch(file, float(pitch))
+                    #self.change_wav_pitch(file, float(pitch))
             except KeyboardInterrupt:
                 return
             except:

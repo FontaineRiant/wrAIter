@@ -4,13 +4,12 @@ models/*
 samples/*
 !samples/.gitkeep
 
+illustrator
+
 *.wav
-fine-tuning/checkpoint
-fine-tuning/data/*
-fine-tuning/drivers
-fine-tuning/models
-fine-tuning/scrape-*
-fine-tuning/settings.json
+
+fine-tuning
+
 *.pkl
 venv
 __pycache__

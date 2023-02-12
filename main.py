@@ -31,7 +31,7 @@ class Game:
             Token.Question: '',
         })
         self.story = Story(self.gen, censor=args.censor)
-        self.voice = 1.05
+        self.voice = args.voice
         self.loop = self.loop_text
         self.voice_on_next_loop = False
         self.sample_hashes = []
@@ -392,6 +392,10 @@ if __name__ == "__main__":
     parser.add_argument('-g', '--cpugpt', action='store_true',
                         default=False,
                         help='(broken) force text generation to run on CPU')
+    parser.add_argument('-v', '--voice', action='store',
+                        default='librispeech-f', type=str,
+                        help='voice selection (wav located in audio/voices)')
+    parser.add_argument("--local_rank", type=int, default=0)
 
     args = parser.parse_args()
 

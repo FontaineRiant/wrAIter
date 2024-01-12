@@ -20,7 +20,7 @@ import readline
 class Game:
     def __init__(self):
         self.gen = Generator(model_name=args.model[0], gpu=not args.cputext, precision=args.precision)
-        self.tts = None if args.jupyter else Dub(gpu=not args.cputts)
+        self.tts = None if args.jupyter or args.silent else Dub(gpu=not args.cputts)
         self.style = style_from_dict({
             Token.Separator: '#cc5454',
             Token.QuestionMark: '#673ab7 bold',
@@ -53,8 +53,6 @@ class Game:
                 choices.append('load')
 
             choices.append('new')
-            # if not args.jupyter:
-            #     choices.append('voice')
 
             choices += ['switch to choice mode' if self.loop == self.loop_text else 'switch to text mode']
             if len(self.story.events) > 1:
@@ -182,7 +180,7 @@ class Game:
 
     def loop_text(self):
         self.pprint()
-        if self.voice_on_next_loop and not args.jupyter:
+        if self.voice_on_next_loop and not args.jupyter and not args.silent:
             self.tts.deep_play(str(self.story))
             self.voice_on_next_loop = False
 
@@ -197,7 +195,7 @@ class Game:
                 if len(self.story.events) <= 2:
                     self.story.new(self.story.events[0], self.story.events[1])
                     self.pprint()
-                    if not args.jupyter:
+                    if not args.jupyter and not args.silent:
                         self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])))
                 elif len(self.story.events) == 3:
                     self.story.events = self.story.events[:-1]
@@ -221,7 +219,7 @@ class Game:
                         action = action[:min_len] + sep.join(action[min_len:].split(sep)[:1])
                         self.story.events.append(action)
                         self.pprint()
-                        if not args.jupyter:
+                        if not args.jupyter and not args.silent:
                             self.tts.deep_play(action)
                     else:
                         print("The start of the story matches the dataset, but not the rest.")
@@ -257,12 +255,12 @@ class Game:
                 if result is None:
                     print("--- The model failed to produce an decent output after multiple tries. Try something else.")
                 else:
-                    if not args.jupyter:
+                    if not args.jupyter and not args.silent:
                         self.tts.deep_play(action + result)
 
     def loop_choice(self):
         self.pprint()
-        if self.voice_on_next_loop and not args.jupyter:
+        if self.voice_on_next_loop and not args.jupyter and not args.silent:
             self.tts.deep_play(str(self.story))
             self.voice_on_next_loop = False
 
@@ -292,7 +290,7 @@ class Game:
                     result = self.story.new(self.story.events[0], self.story.events[1])
                     # print(result)
                     self.pprint()
-                    if not args.jupyter:
+                    if not args.jupyter and not args.silent:
                         self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])))
                 else:
                     self.story.events = self.story.events[:-1]
@@ -310,7 +308,7 @@ class Game:
                 # print('\x1b[1A\x1b[2K' + user_input)
                 # print(user_input)
                 self.pprint()
-                if not args.jupyter:
+                if not args.jupyter and not args.silent:
                     self.tts.deep_play(user_input)
 
     def pprint(self, highlight=None):
@@ -336,6 +334,9 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--censor', action='store_true',
                         default=False,
                         help='adds a censor to the generator')
+    parser.add_argument('-s', '--silent', action='store_true',
+                        default=False,
+                        help='silence the voices, freeing compute resources')
     parser.add_argument('-m', '--model', action='store',
                         default=['KoboldAI/OPT-2.7B-Nerys-v2'], nargs=1, type=str,
                         help='model name')
@@ -354,7 +355,7 @@ if __name__ == "__main__":
 
     list_input_type = 'rawlist' if args.jupyter else 'list'
 
-    if not args.jupyter:
+    if not args.jupyter and not args.silent:
         from audio.tts import Dub
 
     if not os.path.exists('./saved_stories'):

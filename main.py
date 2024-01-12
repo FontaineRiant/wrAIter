@@ -19,7 +19,7 @@ import readline
 
 class Game:
     def __init__(self):
-        self.gen = Generator(model_name=args.model[0], gpu=not args.cpugpt)
+        self.gen = Generator(model_name=args.model[0], gpu=not args.cputext, precision=args.precision)
         self.tts = None if args.jupyter else Dub(gpu=not args.cputts)
         self.style = style_from_dict({
             Token.Separator: '#cc5454',
@@ -342,10 +342,13 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--cputts', action='store_true',
                         default=False,
                         help='force TTS to run on CPU')
-    parser.add_argument('-g', '--cpugpt', action='store_true',
+    parser.add_argument('-x', '--cputext', action='store_true',
                         default=False,
                         help='force text generation to run on CPU')
-    parser.add_argument("--local_rank", type=int, default=0)
+    parser.add_argument('-p', "--precision", type=int, default=16, help='float precision, only available'
+                                                                        'with GPU enabled for text generation,'
+                                                                        'possible values are 4, 8, 16 (default 16),'
+                                                                        'lower values reduce VRAM usage')
 
     args = parser.parse_args()
 

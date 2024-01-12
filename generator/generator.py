@@ -6,7 +6,8 @@ class Generator:
     def __init__(self,
                  model_name='KoboldAI/OPT-2.7B-Nerys-v2',
                  length=80,
-                 gpu=True):
+                 gpu=True,
+                 precision=16):
         """
         :model_name='KoboldAI/OPT-2.7B-Nerys-v2' : String, which model to use from huggingface
         :length=None : Number of tokens in generated text
@@ -14,12 +15,15 @@ class Generator:
         """
         self.device = 'cuda' if gpu else 'cpu'
 
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            # load_in_8bit=gpu,
-            torch_dtype=torch.float16 if gpu else torch.float32
-        )
-        self.model.to(self.device)
+        if precision == 16:
+            self.model = AutoModelForCausalLM.from_pretrained(model_name,torch_dtype=torch.float16 if gpu else torch.float32)
+            self.model.to(self.device)
+        elif precision == 8:
+            self.model = AutoModelForCausalLM.from_pretrained(model_name, load_in_8bit=gpu)
+        elif precision == 4:
+            self.model = AutoModelForCausalLM.from_pretrained(model_name, load_in_4bit=gpu)
+        else:
+            raise ValueError(f'float precision {precision} not supported')
 
         self.enc = AutoTokenizer.from_pretrained(model_name)
 

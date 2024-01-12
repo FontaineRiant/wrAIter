@@ -190,6 +190,15 @@ class Game:
 
             if user_input in ['/menu', '/m']:
                 return
+            elif user_input in ['/e', '/edit']:
+                question = {
+                    'type': 'input',
+                    'name': 'edit',
+                    'message': '',
+                    'default': self.story.events[-1]
+                }
+                self.story.events[-1] = prompt(question, style=self.style)['edit']
+
             elif user_input in ['/revert', '/r']:
                 self.tts.stop()
                 if len(self.story.events) <= 2:
@@ -233,6 +242,7 @@ class Game:
                       '/h   /help     display this help\n'
                       '/m   /menu     go to main menu (it has a save option)\n'
                       '/r   /revert   revert last action and response (if there are none, regenerate an intro)\n'
+                      '/e   /edit     edit last story event'
                       '/n   /next     check ./samples for an identical story and keep reading from the dataset ('
                       'undocumented)\n '
                       'Tips:          Press Enter without typing anything to let the AI continue for you.'

@@ -37,7 +37,7 @@ _How can I customize the narrator's voice?_
 Simply drop WAV files into the directories in `audio/voices/`. Dialogues will alternate between character1 and character2 voices,
 and everything outside quotes will be read by narrator.
 The files should be a clean and samples of a single person talking.
-A male a and a female voice samples are already included: "librispeech-f" and "librispeech-m"
+A male and a female voice samples are already included: "librispeech-f" and "librispeech-m"
 
 _What kind of hardware do I need?_
 

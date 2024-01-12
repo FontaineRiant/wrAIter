@@ -31,7 +31,6 @@ class Game:
             Token.Question: '',
         })
         self.story = Story(self.gen, censor=args.censor)
-        self.voice = args.voice
         self.loop = self.loop_text
         self.voice_on_next_loop = False
         self.sample_hashes = []
@@ -57,7 +56,7 @@ class Game:
             # if not args.jupyter:
             #     choices.append('voice')
 
-            choices += ['model'] + ['switch to choice mode' if self.loop == self.loop_text else 'switch to text mode']
+            choices += ['switch to choice mode' if self.loop == self.loop_text else 'switch to text mode']
             if len(self.story.events) > 1:
                 choices.insert(1, 'save')
 
@@ -82,10 +81,6 @@ class Game:
                 self.save_prompt()
             elif action == 'load':
                 self.load_prompt()
-            elif action == 'model':
-                self.model_prompt()
-            elif action == 'voice':
-                self.voice_prompt()
             elif action == 'switch to choice mode':
                 self.loop = self.loop_choice
             elif action == 'switch to text mode':
@@ -175,7 +170,7 @@ class Game:
         }]
 
         user_input = {}
-        while not user_input:
+        while not user_input or not user_input['user_input']:
             user_input = prompt(questions, style=self.style)
         user_input = user_input['user_input']
 
@@ -188,7 +183,7 @@ class Game:
     def loop_text(self):
         self.pprint()
         if self.voice_on_next_loop and not args.jupyter:
-            self.tts.deep_play(str(self.story), self.voice)
+            self.tts.deep_play(str(self.story))
             self.voice_on_next_loop = False
 
         while True:
@@ -200,10 +195,10 @@ class Game:
             elif user_input in ['/revert', '/r']:
                 self.tts.stop()
                 if len(self.story.events) <= 2:
-                    result = self.story.new(self.story.events[0], self.story.events[1])
+                    self.story.new(self.story.events[0], self.story.events[1])
                     self.pprint()
                     if not args.jupyter:
-                        self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])), self.voice)
+                        self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])))
                 elif len(self.story.events) == 3:
                     self.story.events = self.story.events[:-1]
                 else:
@@ -227,7 +222,7 @@ class Game:
                         self.story.events.append(action)
                         self.pprint()
                         if not args.jupyter:
-                            self.tts.deep_play(action, self.voice)
+                            self.tts.deep_play(action)
                     else:
                         print("The start of the story matches the dataset, but not the rest.")
                         input('Press enter to continue.')
@@ -251,7 +246,7 @@ class Game:
                     action = ' ' + action
 
                 action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
-                action = re.sub('[\.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
+                action = re.sub('[.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
                                 lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
                 action = re.sub(r' *[§|~] *', '\n', action)
 
@@ -263,12 +258,12 @@ class Game:
                     print("--- The model failed to produce an decent output after multiple tries. Try something else.")
                 else:
                     if not args.jupyter:
-                        self.tts.deep_play(action + result, self.voice)
+                        self.tts.deep_play(action + result)
 
     def loop_choice(self):
         self.pprint()
         if self.voice_on_next_loop and not args.jupyter:
-            self.tts.deep_play(str(self.story), self.voice)
+            self.tts.deep_play(str(self.story))
             self.voice_on_next_loop = False
 
         while True:
@@ -298,7 +293,7 @@ class Game:
                     # print(result)
                     self.pprint()
                     if not args.jupyter:
-                        self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])), self.voice)
+                        self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])))
                 else:
                     self.story.events = self.story.events[:-1]
                     # print("Last action reverted.")
@@ -316,7 +311,7 @@ class Game:
                 # print(user_input)
                 self.pprint()
                 if not args.jupyter:
-                    self.tts.deep_play(user_input, self.voice)
+                    self.tts.deep_play(user_input)
 
     def pprint(self, highlight=None):
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -331,49 +326,6 @@ class Game:
 
         print(body + f'\033[96m{highlight}\033[00m')
 
-    def model_prompt(self):
-        models_dir = './models'
-        models_list = [f for f in os.listdir(models_dir) if os.path.isdir(os.path.join(models_dir, f))]
-
-        question = [
-            {
-                'type': list_input_type,
-                'name': 'model_name',
-                'message': f'Chose a model for the AI (located in {models_dir}, current is {self.gen.model_name}). '
-                           f'\nThe new model won\'t be able to use the GPU while still allocating VRAM.\nChange default'
-                           f' model_name in generator/generator.py instead.',
-                'choices': ['< Back'] + models_list,
-                'default': self.gen.model_name
-            }
-        ]
-
-        model_name = {}
-        while not model_name:
-            model_name = prompt(question, style=self.style)
-        model_name = model_name['model_name']
-
-        if model_name == '< Back':
-            return
-
-        print('Loading model ...')
-        # dirty fix: disable GPU unless I find a way to free its memory, otherwise it just crashes
-        self.gen = Generator(model_name, models_dir)
-        self.story.gen = self.gen
-
-    def voice_prompt(self):
-        # TODO: prompt voice sample instead of playback speed
-        question = [
-            {
-                'type': 'input',
-                'name': 'voice',
-                'message': f'Chose a voice speed multiplier (0 to mute sound, 1 for normal speed):',
-                'default': str(self.voice),
-                'validate': lambda val: val.replace('.', '', 1).isdigit()
-            }
-        ]
-
-        self.voice = float(prompt(question, style=self.style)['voice'])
-
 
 if __name__ == "__main__":
     # declare command line arguments
@@ -385,17 +337,14 @@ if __name__ == "__main__":
                         default=False,
                         help='adds a censor to the generator')
     parser.add_argument('-m', '--model', action='store',
-                        default=['gpt-neo-2.7B'], nargs=1, type=str,
+                        default=['KoboldAI/OPT-2.7B-Nerys-v2'], nargs=1, type=str,
                         help='model name')
     parser.add_argument('-t', '--cputts', action='store_true',
                         default=False,
                         help='force TTS to run on CPU')
     parser.add_argument('-g', '--cpugpt', action='store_true',
                         default=False,
-                        help='(broken) force text generation to run on CPU')
-    parser.add_argument('-v', '--voice', action='store',
-                        default='librispeech-f', type=str,
-                        help='voice selection (wav located in audio/voices)')
+                        help='force text generation to run on CPU')
     parser.add_argument("--local_rank", type=int, default=0)
 
     args = parser.parse_args()

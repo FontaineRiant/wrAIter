@@ -52,13 +52,12 @@ class Story:
         return str(self)
 
     def clean_input(self, action=''):
-        max_tokens = self.gen.generator.max_history_tokens - 7  # the 7 is for the <|endoftext|> token (it's badly encoded)
 
-        # find the biggest memory that fits 1024 tokens
+        # find the biggest memory that fits max_tokens
         mem_ind = 1
         while len(
                 self.gen.enc.encode(self.events[0] + ''.join(filter(None, self.events[-mem_ind:]))
-                                    + action)) < max_tokens and len(self.events) - 1 >= mem_ind:
+                                    + action)) < self.gen.max_history and len(self.events) - 1 >= mem_ind:
             mem_ind += 1
         mem_ind -= 1
 
@@ -72,7 +71,8 @@ class Story:
         return text.strip()
 
     def clean_result(self, result):
-        result = re.sub(r'<\|endoftext\|>[\s\S]*$', '', result)  # parse endoftext token (it happens)
+        result = re.sub(rf'^({self.gen.model.config.prefix})+', '', result) # remove leading endoftext tokens
+        result = re.sub(rf'{self.gen.model.config.prefix}[\s\S]*$', '', result)  # parse endoftext token that end the text
 
         # remove sentences that are cut in the middle
         end_of_sentence_index = next(iter([i for i, j in list(enumerate(result, 1))[::-1] if j in '.:?!']),
@@ -83,8 +83,8 @@ class Story:
         result = re.sub(r'([\s\S]{2,})([\s\S]?\1)+$', r'\1', result)
 
         # close open quotes
-        if (str(self) + result).count('"') % 2 != 0:
-            result += '"'
+        #if (str(self) + result).count('"') % 2 != 0:
+        #    result += '"'
 
         result = result.replace("’", "'")
         result = result.replace("`", "'")
@@ -113,6 +113,7 @@ class Story:
                 return None
             tries -= 1
             result = self.gen.generate(input_str)
+            print(result)
             result = self.clean_result(result)
 
         self.events.append(action)

@@ -6,7 +6,7 @@ Or you can enable "choice mode" and let the AI make suggestions you can pick
 from for each paragraph.
 
 The AI writer is powered by any LLM that can be found on [Hugging Face](https://huggingface.co/), easily swappable through a command line argument.
-The suggested model has 2.7 billion parameters
+The default model has 2.7 billion parameters
 and was fine-tuned to write fictional stories.
 
 ## Features

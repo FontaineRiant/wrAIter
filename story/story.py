@@ -75,22 +75,27 @@ class Story:
         result = re.sub(rf'{self.gen.model.config.prefix}[\s\S]*$', '', result)  # parse endoftext token that end the text
 
         # remove sentences that are cut in the middle
-        end_of_sentence_index = next(iter([i for i, j in list(enumerate(result, 1))[::-1] if j in '.:?!']),
+        end_of_sentence_index = next(iter([i for i, j in list(enumerate(result, 1))[::-1] if j in '".:?!']),
                                      len(result))
         result = result[:end_of_sentence_index]
 
         # remove repeating substrings of 2+ characters at the end of result
         result = re.sub(r'([\s\S]{2,})([\s\S]?\1)+$', r'\1', result)
 
+
         # close open quotes
         #if (str(self) + result).count('"') % 2 != 0:
         #    result += '"'
+
 
         result = result.replace("’", "'")
         result = result.replace("`", "'")
         result = result.replace("“", '"')
         result = result.replace("”", '"')
         result = result.replace("\n\n", '\n')
+        
+        # remove trailing start of quote
+        result = re.sub(r'\s"$', '', result)
 
         if self.censor:
             result = re.sub(r'|'.join(rf'(\b{re.escape(s)}\b)' for s in self.censored_words), '[CENSORED]', result,

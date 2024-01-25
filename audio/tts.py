@@ -93,36 +93,36 @@ class Dub:
         char1 = ['./audio/voices/character1/' + f for f in os.listdir('./audio/voices/character1')]
         char2 = ['./audio/voices/character2/' + f for f in os.listdir('./audio/voices/character2')]
 
-
-        lines = text.split('"')
-        cnt = 0
-
-        self.lines_spoken += 1
-
         files = []
 
-        for line in lines:
-            if cnt % 2:
-                # within quotes
-                speaker = char1 if self.lines_spoken % 2 else char2
-            else:
-                # out of quotes -> narrator
-                speaker = narrator
+        for t in text.split('\n'):
+            cnt = 0
 
-            cnt += 1
+            self.lines_spoken += 1
 
-            line = self.clean_input(line)
+            lines = t.split('"')
+            for line in lines:
+                if cnt % 2:
+                    # within quotes
+                    speaker = char1 if self.lines_spoken % 2 else char2
+                else:
+                    # out of quotes -> narrator
+                    speaker = narrator
 
-            if not line or speaker is None:
-                continue
+                cnt += 1
 
-            file = os.path.join(self.tempdir, f'temp{random.randint(0, int(1e16))}.wav')
+                line = self.clean_input(line)
 
-            with self.suppress_stdout():
-                wav = self.synthesizer.tts(line, speaker_wav=speaker, language_name='en',
-                                           speaker_name=None, split_sentences=True)
-                self.synthesizer.save_wav(wav, file)
-                files.append(file)
+                if not line or speaker is None:
+                    continue
+
+                file = os.path.join(self.tempdir, f'temp{random.randint(0, int(1e16))}.wav')
+
+                with self.suppress_stdout():
+                    wav = self.synthesizer.tts(line, speaker_wav=speaker, language_name='en',
+                                               speaker_name=None, split_sentences=True)
+                    self.synthesizer.save_wav(wav, file)
+                    files.append(file)
 
 
         file = self.postprocess(files, 1.1)

@@ -242,7 +242,7 @@ class Game:
                       '/h   /help     display this help\n'
                       '/m   /menu     go to main menu (it has a save option)\n'
                       '/r   /revert   revert last action and response (if there are none, regenerate an intro)\n'
-                      '/e   /edit     edit last story event'
+                      '/e   /edit     edit last story event\n'
                       '/n   /next     check ./samples for an identical story and keep reading from the dataset ('
                       'undocumented)\n '
                       'Tips:          Press Enter without typing anything to let the AI continue for you.'

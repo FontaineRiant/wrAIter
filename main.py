@@ -191,6 +191,9 @@ class Game:
             if user_input in ['/menu', '/m']:
                 return
             elif user_input in ['/e', '/edit']:
+                if self.tts is not None:
+                    self.tts.stop()
+
                 question = {
                     'type': 'input',
                     'name': 'edit',
@@ -200,7 +203,8 @@ class Game:
                 self.story.events[-1] = prompt(question, style=self.style)['edit']
 
             elif user_input in ['/revert', '/r']:
-                self.tts.stop()
+                if self.tts is not None:
+                    self.tts.stop()
                 if len(self.story.events) <= 2:
                     self.story.new(self.story.events[0], self.story.events[1])
                     self.pprint()

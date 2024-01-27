@@ -115,10 +115,6 @@ class Game:
                            "\nthat you expect to remain true as the story develops. Who are your characters? What "
                            "world do they live in?\n",
                 'name': 'context'
-            }, {
-                'type': 'input',
-                'message': 'Type a short prompt. This is the start of your story.\n',
-                'name': 'prompt'
             }]
 
 
@@ -127,20 +123,14 @@ class Game:
                 custom_input = prompt(questions, style=self.style)
 
             context = custom_input['context'].strip()
-            custom_prompt = custom_input['prompt'].strip()
         elif action == 'ai-generated':
-            custom_prompt = ''
             context = ''
         else:
             context = grammars.generate(action, "context").strip()
-            custom_prompt = grammars.generate(action, "prompt").strip()
-
-        if context and custom_prompt:
-            custom_prompt = ' ' + custom_prompt
 
         print("Generating story ...")
         print("Type /help or /h to get a list of commands.")
-        self.story.new(context, custom_prompt)
+        self.story.new(context)
         self.voice_on_next_loop = True
 
     def load_prompt(self):
@@ -164,7 +154,8 @@ class Game:
         questions = [{
             'type': 'input',
             'message': "Type a name for your save file.",
-            'name': 'user_input'
+            'name': 'user_input',
+            'default': self.story.title
         }]
 
         user_input = {}
@@ -202,15 +193,15 @@ class Game:
                 }
                 self.story.events[-1] = prompt(question, style=self.style)['edit']
 
+            elif user_input in ['/s', '/save']:
+                self.save_prompt()
+
             elif user_input in ['/revert', '/r']:
                 if self.tts is not None:
                     self.tts.stop()
-                if len(self.story.events) <= 2:
-                    self.story.new(self.story.events[0], self.story.events[1])
-                    self.pprint()
-                    if not args.jupyter and not args.silent:
-                        self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])))
-                elif len(self.story.events) == 3:
+                if len(self.story.events) <= 1:
+                    pass
+                elif len(self.story.events) == 2:
                     self.story.events = self.story.events[:-1]
                 else:
                     self.story.events = self.story.events[:-2]
@@ -249,6 +240,7 @@ class Game:
                       '/e   /edit     edit last story event\n'
                       '/n   /next     check ./samples for an identical story and keep reading from the dataset ('
                       'undocumented)\n '
+                      '/s   /save     save story\n '
                       'Tips:          Press Enter without typing anything to let the AI continue for you.'
                       '               Use "~" or "§" in your inputs to insert a line break.')
                 input('Press enter to continue.')
@@ -301,7 +293,7 @@ class Game:
                 return
             elif user_input == '< revert >':
                 if len(self.story.events) < 4:
-                    result = self.story.new(self.story.events[0], self.story.events[1])
+                    result = self.story.new(self.story.events[0])
                     # print(result)
                     self.pprint()
                     if not args.jupyter and not args.silent:

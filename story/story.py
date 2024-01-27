@@ -18,6 +18,7 @@ class Story:
         self.censor = censor
         self.gen = gen
         self.events = []
+        self.title = ''
 
         if not os.path.exists(SAVE_PATH):
             os.makedirs(SAVE_PATH)
@@ -26,6 +27,7 @@ class Story:
             self.censored_words = [l.strip(" \n\r,.") for l in f.readlines()]
 
     def load(self, save_name: str):
+        self.title = save_name
         file_name = str(save_name) + ".json"
         exists = os.path.isfile(os.path.join(SAVE_PATH, file_name))
         if exists:
@@ -42,13 +44,14 @@ class Story:
                     return self.load(name[:-5])
 
     def save(self, save_name: str):
+        self.title = save_name
         file_name = str(save_name) + ".json"
         with open(os.path.join(SAVE_PATH, file_name), "w") as fp:
             json.dump(self.events, fp)
 
-    def new(self, context: str = '', prompt: str = ''):
+    def new(self, context: str = ''):
+        self.title = ''
         self.events = [context]
-        self.act(prompt)
         return str(self)
 
     def clean_input(self, action=''):
@@ -81,12 +84,6 @@ class Story:
 
         # remove repeating substrings of 2+ characters at the end of result
         result = re.sub(r'([\s\S]{2,})([\s\S]?\1)+$', r'\1', result)
-
-
-        # close open quotes
-        #if (str(self) + result).count('"') % 2 != 0:
-        #    result += '"'
-
 
         result = result.replace("’", "'")
         result = result.replace("`", "'")

@@ -139,7 +139,8 @@ class Game:
             'message': 'Choose a file to load',
             'name': 'action',
             'choices': ['< Back'] + sorted([f[:-5] for f in os.listdir(SAVE_PATH) if f.endswith('.json')],
-                                           key=lambda name: os.path.getmtime(os.path.join(SAVE_PATH, name + '.json')))
+                                           key=lambda name: os.path.getmtime(os.path.join(SAVE_PATH, name + '.json')),
+                                           reverse=True)
         }]
 
         action = {}
@@ -368,4 +369,8 @@ if __name__ == "__main__":
         os.mkdir('./saved_stories')
 
     g = Game()
-    g.play()
+    try:
+        g.play()
+    except:
+        if g.story.events:
+            g.story.save(g.story.title + '_crash_recovery')

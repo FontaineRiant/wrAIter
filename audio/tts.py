@@ -77,8 +77,6 @@ class Dub:
 
 
     def playsound(self, file):
-        while mixer.music.get_busy():
-            time.sleep(0.1)
         self.stop()
         mixer.music.load(file)
         mixer.music.play()
@@ -124,11 +122,9 @@ class Dub:
                     self.synthesizer.save_wav(wav, file)
                     files.append(file)
 
-
-        file = self.postprocess(files, 1.1)
-
-        self.stop()
-        self.playsound(file)
+        if files:
+            file = self.postprocess(files, 1.1)
+            self.playsound(file)
 
     def postprocess(self, files, pitch=1.0):
         processedfile = os.path.join(self.tempdir, f'temp{random.randint(0, int(1e16))}.wav')

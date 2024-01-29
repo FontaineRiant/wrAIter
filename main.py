@@ -374,3 +374,4 @@ if __name__ == "__main__":
     except:
         if g.story.events:
             g.story.save(g.story.title + '_crash_recovery')
+        raise

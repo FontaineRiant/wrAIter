@@ -77,20 +77,20 @@ class Story:
         result = re.sub(rf'^({self.gen.model.config.prefix})+', '', result) # remove leading endoftext tokens
         result = re.sub(rf'{self.gen.model.config.prefix}[\s\S]*$', '', result)  # parse endoftext token that end the text
 
-        # remove sentences that are cut in the middle
-        end_of_sentence_index = next(iter([i for i, j in list(enumerate(result, 1))[::-1] if j in '".:?!']),
-                                     len(result))
-        result = result[:end_of_sentence_index]
-
-        # remove repeating substrings of 2+ characters at the end of result
-        result = re.sub(r'([\s\S]{2,})([\s\S]?\1)+$', r'\1', result)
-
         result = result.replace("’", "'")
         result = result.replace("`", "'")
         result = result.replace("“", '"')
         result = result.replace("”", '"')
         result = result.replace("\n\n", '\n')
-        
+
+        # remove repeating substrings of 2+ characters at the end of result
+        result = re.sub(r'([\s\S]{2,})([\s\S]?\1)+$', r'\1', result)
+
+        # remove sentences that are cut in the middle
+        end_of_sentence_index = next(iter([i for i, j in list(enumerate(result, 1))[::-1] if j in '".:?!']),
+                                     len(result))
+        result = result[:end_of_sentence_index]
+
         # remove trailing start of quote
         result = re.sub(r'\s"$', '', result)
 

@@ -1,3 +1,4 @@
+import io
 import os, sys, datetime, argparse, time
 from pathlib import Path
 from contextlib import contextmanager
@@ -33,11 +34,6 @@ class Dub:
                                        tts_config_path=self.config_path,
                                        use_cuda=gpu)
 
-        self.tempdir = Path(__file__).parent / "./temp"
-        for root, dirs, files in os.walk(self.tempdir):
-            for f in files:
-                if f.endswith('.wav'):
-                    os.remove(os.path.join(root, f))
 
     @contextmanager
     def suppress_stdout(self):
@@ -78,13 +74,10 @@ class Dub:
 
     def playsound(self, file):
         self.stop()
+        file.seek(0)
         mixer.music.load(file)
         mixer.music.play()
 
-        for root, dirs, files in os.walk(self.tempdir):
-            for f in files:
-                if f.endswith('.wav') and f not in file:
-                    os.remove(os.path.join(root, f))
 
     def deep_play(self, text):
         narrator = ['./audio/voices/narrator/' + f for f in os.listdir('./audio/voices/narrator')]
@@ -114,20 +107,27 @@ class Dub:
                 if not line or speaker is None:
                     continue
 
-                file = os.path.join(self.tempdir, f'temp{random.randint(0, int(1e16))}.wav')
+
 
                 with self.suppress_stdout():
-                    wav = self.synthesizer.tts(line, speaker_wav=speaker, language_name='en',
-                                               speaker_name=None, split_sentences=True)
-                    self.synthesizer.save_wav(wav, file)
-                    files.append(file)
+                    try:
+                        wav = self.synthesizer.tts(line, speaker_wav=speaker, language_name='en',
+                                                   speaker_name=None, split_sentences=True)
+                    except AssertionError:
+                        # if input too big, try again with commas instead of periods
+                        wav = self.synthesizer.tts(line.replace(',', '.'), speaker_wav=speaker,
+                                                   language_name='en', speaker_name=None, split_sentences=True)
+
+                in_memory_wav=io.BytesIO()
+                self.synthesizer.save_wav(wav, in_memory_wav)
+                files.append(in_memory_wav)
 
         if files:
             file = self.postprocess(files, 1.1)
             self.playsound(file)
 
     def postprocess(self, files, pitch=1.0):
-        processedfile = os.path.join(self.tempdir, f'temp{random.randint(0, int(1e16))}.wav')
+        processedfile = io.BytesIO()
 
         with wave.open(processedfile, 'wb') as wf:
             signals = []
@@ -135,9 +135,6 @@ class Dub:
                 with wave.open(file, 'rb') as spf:
                     rate = spf.getframerate()
                     signals.append(spf.readframes(-1))
-
-                if os.path.exists(file):
-                    os.remove(file)
 
             wf.setnchannels(1)
             wf.setsampwidth(2)

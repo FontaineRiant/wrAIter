@@ -41,6 +41,7 @@ class Generator:
             max_new_tokens=self.length,
             do_sample=True,
             use_cache=True,
+            pad_token_id=self.enc.eos_token_id,
         )
 
         return self.enc.batch_decode(generated_ids[:, model_inputs['input_ids'].shape[1]:])[0]

@@ -6,8 +6,7 @@ import story.story
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-from PyInquirer import style_from_dict, Token, prompt
-
+from InquirerPy import prompt
 from story import grammars
 from story.story import Story
 from story.story import SAVE_PATH
@@ -21,15 +20,28 @@ class Game:
     def __init__(self):
         self.gen = Generator(model_name=args.model[0], gpu=not args.cputext, precision=args.precision)
         self.tts = None if args.jupyter or args.silent else Dub(gpu=not args.cputts)
-        self.style = style_from_dict({
-            Token.Separator: '#cc5454',
-            Token.QuestionMark: '#673ab7 bold',
-            Token.Selected: '#cc5454',  # default
-            Token.Pointer: '#673ab7 bold',
-            Token.Instruction: '',  # default
-            Token.Answer: '#f44336 bold',
-            Token.Question: '',
-        })
+        self.style = {
+            "questionmark": "#e5c07b",
+            "answermark": "#e5c07b",
+            "answer": "#61afef",
+            "input": "#98c379",
+            "question": "",
+            "answered_question": "",
+            "instruction": "#abb2bf",
+            "long_instruction": "#abb2bf",
+            "pointer": "#61afef",
+            "checkbox": "#98c379",
+            "separator": "",
+            "skipped": "#5c6370",
+            "validator": "",
+            "marker": "#e5c07b",
+            "fuzzy_prompt": "#c678dd",
+            "fuzzy_info": "#abb2bf",
+            "fuzzy_border": "#4b5263",
+            "fuzzy_match": "#c678dd",
+            "spinner_pattern": "#e5c07b",
+            "spinner_text": "",
+        }
         self.story = Story(self.gen, censor=args.censor)
         self.loop = self.loop_text
         self.voice_on_next_loop = False

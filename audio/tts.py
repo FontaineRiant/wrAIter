@@ -9,6 +9,7 @@ import TTS
 from TTS.utils.synthesizer import Synthesizer
 from TTS.utils.manage import ModelManager
 from pygame import mixer
+from pysbd import Segmenter
 
 
 class Dub:
@@ -46,6 +47,8 @@ class Dub:
                 sys.stdout = old_stdout
 
     def clean_input(self, text):
+        text = re.sub(r'(?<=[0-9])"', ' inches', text)  # quote to inches
+        text = re.sub(r"\B'\B|(?<!s)\b'\B|\B'\b", '"', text)  # replace single quotes
         text = text.replace('"', '')
         text = text.replace('\n', ' ')
         text = text.replace(':', '.')
@@ -107,20 +110,38 @@ class Dub:
                 if not line or speaker is None:
                     continue
 
+                if len(line) > 1 and line[-1] == '.':
+                    line = line[:-1]  # remove trailing dots, they're often pronounced "dot"
 
+                # split sentences manually to then regroup tiny sentences together (one-word inputs sound ugly)
+                sentences = Segmenter(language='en', clean=True).segment(line)
+                i = 0
+                while i < len(sentences) - 1:
+                    if len(sentences[i]) < 25 or len(sentences[i + 1]) < 25:
+                        sentences[i] += ' ' + sentences.pop(i + 1)
+                    else:
+                        i += 1
 
-                with self.suppress_stdout():
-                    try:
-                        wav = self.synthesizer.tts(line, speaker_wav=speaker, language_name='en',
-                                                   speaker_name=None, split_sentences=True)
-                    except AssertionError:
-                        # if input too big, try again with commas instead of periods
-                        wav = self.synthesizer.tts(line.replace(',', '.'), speaker_wav=speaker,
-                                                   language_name='en', speaker_name=None, split_sentences=True)
+                for sens in sentences:
+                    with self.suppress_stdout():
+                        try:
+                            wav = self.synthesizer.tts(sens, speaker_wav=speaker, language_name='en',
+                                                       speaker_name=None, split_sentences=False)
+                        except AssertionError:
+                            try:
+                                # if input too big, try again with automatic split sentences
+                                wav = self.synthesizer.tts(sens, speaker_wav=speaker,
+                                                           language_name='en',
+                                                           speaker_name=None, split_sentences=True)
+                            except AssertionError:
+                                # if input still too big, try again with commas instead of periods
+                                wav = self.synthesizer.tts(sens.replace(',', '.'), speaker_wav=speaker,
+                                                           language_name='en',
+                                                           speaker_name=None, split_sentences=True)
 
-                in_memory_wav=io.BytesIO()
-                self.synthesizer.save_wav(wav, in_memory_wav)
-                files.append(in_memory_wav)
+                    in_memory_wav=io.BytesIO()
+                    self.synthesizer.save_wav(wav, in_memory_wav)
+                    files.append(in_memory_wav)
 
         if files:
             file = self.postprocess(files, 1.1)

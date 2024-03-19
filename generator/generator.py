@@ -25,7 +25,7 @@ class Generator:
         else:
             raise ValueError(f'float precision {precision} not supported')
 
-        self.enc = AutoTokenizer.from_pretrained(model_name)
+        self.enc = AutoTokenizer.from_pretrained(model_name, add_prefix_space=False)
 
         self.length = length
         self.max_history = self.model.config.max_position_embeddings - self.length
@@ -44,4 +44,5 @@ class Generator:
             pad_token_id=self.enc.eos_token_id,
         )
 
-        return self.enc.batch_decode(generated_ids[:, model_inputs['input_ids'].shape[1]:])[0]
+        return self.enc.batch_decode(generated_ids[:, model_inputs['input_ids'].shape[1]:],
+                                     clean_up_tokenization_spaces=False)[0]

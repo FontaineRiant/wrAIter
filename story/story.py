@@ -74,8 +74,8 @@ class Story:
         return text.strip()
 
     def clean_result(self, result):
-        result = re.sub(rf'^({self.gen.model.config.prefix})+', '', result) # remove leading endoftext tokens
-        result = re.sub(rf'{self.gen.model.config.prefix}[\s\S]*$', '', result)  # parse endoftext token that end the text
+        result = re.sub(rf'^({self.gen.enc.eos_token})+', '', result) # remove leading endoftext tokens
+        result = re.sub(rf'{self.gen.enc.eos_token}[\s\S]*$', '', result)  # parse endoftext token that end the text
 
         result = result.replace("’", "'")
         result = result.replace("`", "'")

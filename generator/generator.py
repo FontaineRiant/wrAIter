@@ -28,7 +28,7 @@ class Generator:
         self.enc = AutoTokenizer.from_pretrained(model_name, add_prefix_space=False)
 
         self.length = length
-        self.max_history = self.model.config.max_position_embeddings - self.length
+        self.max_history = min(self.model.config.max_position_embeddings - self.length, 6000)
 
     def __del__(self):
         pass

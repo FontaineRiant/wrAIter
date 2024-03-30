@@ -190,7 +190,7 @@ class Game:
 
         while True:
             self.pprint()
-            user_input = input('> ').strip()
+            user_input = input('\n> ').strip()
 
             if user_input in ['/menu', '/m']:
                 return
@@ -252,8 +252,8 @@ class Game:
                       '/r   /revert   revert last action and response (if there are none, regenerate an intro)\n'
                       '/e   /edit     edit last story event\n'
                       '/n   /next     check ./samples for an identical story and keep reading from the dataset ('
-                      'undocumented)\n '
-                      '/s   /save     save story\n '
+                      'undocumented)\n'
+                      '/s   /save     save story\n'
                       'Tips:          Press Enter without typing anything to let the AI continue for you.'
                       '               Use "~" or "§" in your inputs to insert a line break.')
                 input('Press enter to continue.')
@@ -330,18 +330,18 @@ class Game:
                 if not args.jupyter and not args.silent:
                     self.tts.deep_play(user_input)
 
-    def pprint(self, highlight=None):
+    def pprint(self, highlighted=None):
         os.system('cls' if os.name == 'nt' else 'clear')
         if args.jupyter:
             print('\n' * 25)  # dirty output clear for jupyter
 
-        if highlight is None:
-            highlight = self.story.events[-1]
+        if highlighted is None:
+            highlighted = self.story.events[-1]
             body = ''.join(filter(None, self.story.events[:-1])).lstrip()
         else:
             body = str(self.story)
 
-        print(body + f'\033[96m{highlight}\033[00m')
+        print(f'{body}\033[96m{highlighted}\033[00m', end='')
 
 
 if __name__ == "__main__":

@@ -17,6 +17,7 @@ class Dub:
         mixer.init()
 
         self.lines_spoken = 0
+        self.device = 'cuda' if gpu else 'cpu'
 
         self.model_name = "tts_models/multilingual/multi-dataset/xtts_v2"
 
@@ -34,6 +35,7 @@ class Dub:
         self.synthesizer = Synthesizer(tts_checkpoint=self.model_path,
                                        tts_config_path=self.config_path,
                                        use_cuda=gpu)
+        self.synthesizer.tts_model.to('cpu')
 
 
     @contextmanager
@@ -122,6 +124,8 @@ class Dub:
                     else:
                         i += 1
 
+                self.synthesizer.tts_model.to(self.device)
+
                 for sens in sentences:
                     with self.suppress_stdout():
                         try:
@@ -142,6 +146,8 @@ class Dub:
                     in_memory_wav=io.BytesIO()
                     self.synthesizer.save_wav(wav, in_memory_wav)
                     files.append(in_memory_wav)
+
+                self.synthesizer.tts_model.to('cpu')
 
         if files:
             file = self.postprocess(files, 1.1)

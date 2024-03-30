@@ -41,11 +41,15 @@ A male and a female voice samples are already included: "librispeech-f" and "lib
 
 _What kind of hardware do I need?_
 
-You'll need an NVIDIA GPU with at least 8 GB of VRAM, or a lot of patience and 28 GB of RAM (with the --cputext flag).
+You'll need an GPU with at least 8 GB of VRAM, or a lot of patience and 28 GB of RAM (with the --cputext flag).
 With 10 GB of VRAM (RTX 3080), you can also run TTS faster by removing the --cputts flag. Feel free to try smaller and 
 bigger variants of the OPT model from huggingface.
 
-The `--precision` also allows you to reduce VRAM usage by reducing float precision to 8 or 4 bits (see `--help`).
+With 24GB of VRAM, Mistral models now work with enough spare memory for TTS.
+
+AMD is also supported since version 2.2.0.
+
+The `--precision` also allows you to reduce VRAM usage by reducing float precision to 8 or 4 bits (see `--help`, NVIDIA only for now).
 
 _How should I write things in a way that the AI understands?_
 

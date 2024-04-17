@@ -36,11 +36,11 @@ class Generator:
         self.max_history = min(self.model.config.max_position_embeddings - self.length, 6000)
         self.streamer = TextStreamer(self.enc, skip_prompt=True)
 
-    def __del__(self):
-        pass
+    def generate(self, prompt: str, stream=True, eos_tokens=[]):
+        eos_token_ids = [self.enc.encode(term)[1] for term in eos_tokens]
 
-    def generate(self, prompt: str):
         model_inputs = self.enc([prompt], return_tensors='pt').to(self.device)
+
 
         if self.offload_to_memory:
             self.model.to(self.device)
@@ -52,8 +52,9 @@ class Generator:
             do_sample=True,
             use_cache=True,
             pad_token_id=self.enc.eos_token_id,
-            streamer=self.streamer,
-            penalty_alpha=0.5
+            streamer=self.streamer if stream else None,
+            repetition_penalty=1.05,
+            eos_token_id=eos_token_ids + [self.enc.eos_token_id]
         )
         print('\033[00m', end='')
 

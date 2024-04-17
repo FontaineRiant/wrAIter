@@ -3,10 +3,12 @@ import os
 import re
 from difflib import SequenceMatcher
 import hashlib
-
+from collections import Counter
 from generator.generator import Generator
 
 SAVE_PATH = "./saved_stories/"
+if not os.path.exists(SAVE_PATH):
+    os.makedirs(SAVE_PATH)
 
 
 def story_hash(string: str):
@@ -15,13 +17,12 @@ def story_hash(string: str):
 
 class Story:
     def __init__(self, gen: Generator, censor: bool):
+        self.stream = True
         self.censor = censor
         self.gen = gen
         self.events = []
         self.title = ''
-
-        if not os.path.exists(SAVE_PATH):
-            os.makedirs(SAVE_PATH)
+        self.save_path = SAVE_PATH
 
         with open("./story/censored_words.txt", "r") as f:
             self.censored_words = [l.strip(" \n\r,.") for l in f.readlines()]
@@ -29,24 +30,18 @@ class Story:
     def load(self, save_name: str):
         self.title = save_name
         file_name = str(save_name) + ".json"
-        exists = os.path.isfile(os.path.join(SAVE_PATH, file_name))
+        exists = os.path.isfile(os.path.join(self.save_path, file_name))
         if exists:
-            with open(os.path.join(SAVE_PATH, file_name), "r") as fp:
+            with open(os.path.join(self.save_path, file_name), "r") as fp:
                 self.events = json.load(fp)
-                return str(self)
+            return str(self)
         else:
             return "Error save not found."
-
-    def cont(self):
-        for path, subdirs, files in os.walk(SAVE_PATH):
-            for name in reversed(sorted(files, key=lambda name: os.path.getmtime(os.path.join(path, name)))):
-                if name.endswith('.json'):
-                    return self.load(name[:-5])
 
     def save(self, save_name: str):
         self.title = save_name
         file_name = str(save_name) + ".json"
-        with open(os.path.join(SAVE_PATH, file_name), "w") as fp:
+        with open(os.path.join(self.save_path, file_name), "w") as fp:
             json.dump(self.events, fp)
 
     def new(self, context: str = ''):
@@ -55,7 +50,6 @@ class Story:
         return str(self)
 
     def clean_input(self, action=''):
-
         # find the biggest memory that fits max_tokens
         mem_ind = 1
         while len(
@@ -74,8 +68,8 @@ class Story:
         return text.strip()
 
     def clean_result(self, result):
-        result = re.sub(rf'^({self.gen.enc.eos_token})+', '', result) # remove leading endoftext tokens
         result = re.sub(rf'{self.gen.enc.eos_token}[\s\S]*$', '', result)  # parse endoftext token that end the text
+        result = re.sub(rf'^({self.gen.enc.eos_token})+', '', result) # remove leading endoftext tokens
 
         result = result.replace("’", "'")
         result = result.replace("`", "'")
@@ -100,10 +94,10 @@ class Story:
 
         return result.rstrip('\n')
 
-    def act(self, action: str = '', tries: int = 10):
+    def act(self, action: str = '', tries: int = 10, eos_tokens=[]):
         max_tries = tries
         input_str = self.clean_input(action)
-        result = self.gen.generate(input_str)
+        result = self.gen.generate(input_str, stream=self.stream, eos_tokens=eos_tokens)
         result = self.clean_result(result)
 
         while (len(result) < 2
@@ -114,7 +108,7 @@ class Story:
             if tries == 0:
                 return None
             tries -= 1
-            result = self.gen.generate(input_str)
+            result = self.gen.generate(input_str, stream=self.stream, eos_tokens=eos_tokens)
             print(result)
             result = self.clean_result(result)
 
@@ -128,7 +122,7 @@ class Story:
         input_str = self.clean_input()
 
         while len(res) < n and tries > 0:
-            result = self.gen.generate(input_str)
+            result = self.gen.generate(input_str, stream=False)
             result = self.clean_result(result)
 
             if not (len(result) < 2
@@ -140,6 +134,20 @@ class Story:
             tries -= 1
 
         return res
+
+    def wordcloud(self, top_n=10, include_count=True):
+        ignorelist = ['you', 'are','she',  'has', 'have', 'don', 'does', 'her', 'can', 'for', 'out', 'not', 'all',
+                      'get', 'his','your', 'this', 'that', 'but', 'then', 'with', 'the', 'and', 'they', 'them', 'into',
+                      'from', 'was', 'had', 'would', 'could', 'him', 'when', 'where', 'going', 'couldn', 'wouldn',
+                      'its', 'their', 'were']
+        words = [w for w
+                 in re.sub(r'\W+',' ',  str(self).lower()).split()
+                 if w not in ignorelist and len(w) > 2]
+        wordcloud = Counter(words).most_common(top_n)
+        if include_count:
+            return ', '.join([f'{w} ({n})'for w, n in wordcloud])
+        else:
+            return ', '.join([w for w, _ in wordcloud])
 
     def __str__(self):
         text = ''.join(filter(None, self.events)).lstrip()

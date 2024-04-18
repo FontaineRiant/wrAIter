@@ -389,11 +389,12 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
             results = self.story.gen_n_results(3)
             results = {r.strip('\n').split('\n')[0]: r for r in results}
             choices = ['< more >'] + list(results.keys()) + ['< revert >', '< menu >']
+            print()
             question = [
                 {
                     'type': list_input_type,
                     'name': 'choice',
-                    'message': f'\nchoice:',
+                    'message': f'choice:',
                     'choices': choices
                 }
             ]
@@ -406,6 +407,8 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
             if user_input == '< menu >':
                 return
             elif user_input == '< revert >':
+                if self.tts is not None:
+                    self.tts.stop()
                 if len(self.story.events) < 4:
                     self.story.new(self.story.events[0])
                     self.pprint()

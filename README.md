@@ -17,7 +17,7 @@ and was fine-tuned to write fictional stories.
 
 ## Features
 * Compatible with LLMs from huggingface, fine-tuned for the specific purpose of writing stories,
-* A high quality narrator AI that reads the story out loud (TTS)**,
+* A high quality narrator AI that reads the story out loud (TTS),
 * Customizable voice: the narrator will sound like any voice sample of your choice,
 * Multiple speakers: the voice will change between the narrator and different characters,
 * Three modes to build a story: alternating AI-human writing, choosing from AI generated options or **microphone input**,

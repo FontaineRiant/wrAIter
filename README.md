@@ -11,6 +11,8 @@ The AI writer is powered by any LLM that can be found on [Hugging Face](https://
 The default model has 2.7 billion parameters
 and was fine-tuned to write fictional stories.
 
+![image](https://github.com/FontaineRiant/wrAIter/assets/25899941/44173a2e-6cd4-4ec6-bf7a-f1028a23902c)
+
 ## Features
 * State-of-the-art LLMs from huggingface fine-tuned for the specific purpose of writing stories,
 * A high quality narrator AI that reads the story out loud (TTS)**,
@@ -20,7 +22,7 @@ and was fine-tuned to write fictional stories.
 * A conversation mode to chat directly with a fictional character,
 * Save, load, continue and revert functions.
 
-![image](https://github.com/FontaineRiant/wrAIter/assets/25899941/44173a2e-6cd4-4ec6-bf7a-f1028a23902c)
+
 
 ## Local Installation
 0. (Optional) Set up CUDA 11.1 to enable hardware acceleration if your GPU can take it.

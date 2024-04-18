@@ -88,4 +88,6 @@ No. First, wrAIter doesn't adjust based on your or other players' inputs. The mo
 ## Credits
 * [Latitude](https://github.com/Latitude-Archives/AIDungeon) for AIDungeon that I used as a starting point,
 * [Hugging Face](https://huggingface.co/) for Language Models,
-* [coqui-ai](https://github.com/coqui-ai/TTS) for the TTS models.
+* [coqui-ai](https://github.com/coqui-ai/TTS) for the TTS models,
+* [mallorbc](https://github.com/mallorbc/whisper_mic) for the mic input lib,
+* [openai](https://github.com/openai/whisper) for the STT model.

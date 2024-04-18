@@ -16,7 +16,7 @@ and was fine-tuned to write fictional stories.
 ![image](https://github.com/FontaineRiant/wrAIter/assets/25899941/44173a2e-6cd4-4ec6-bf7a-f1028a23902c)
 
 ## Features
-* State-of-the-art LLMs from huggingface fine-tuned for the specific purpose of writing stories,
+* Compatible with LLMs from huggingface, fine-tuned for the specific purpose of writing stories,
 * A high quality narrator AI that reads the story out loud (TTS)**,
 * Customizable voice: the narrator will sound like any voice sample of your choice,
 * Multiple speakers: the voice will change between the narrator and different characters,

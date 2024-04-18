@@ -2,11 +2,14 @@
 import json
 import os
 
+import torch.cuda
+
 import story.story
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-from audio.stt import listen
+import audio.stt
+from audio.stt import CustomMic
 from InquirerPy import prompt
 from story import grammars
 from story.story import Story
@@ -21,7 +24,8 @@ import readline  # actually necessary for pyinquirer to work consistently
 class Game:
     def __init__(self):
         self.gen = Generator(model_name=args.model[0], gpu=not args.cputext, precision=args.precision)
-        self.tts = None if args.jupyter or args.silent else Dub(gpu=not args.cputts)
+        self.tts = None if args.jupyter or args.silent else Dub(gpu=not args.cputts, lang=args.lang[0])
+        self.stt = CustomMic(english=(args.lang[0]=='en'), model='medium')
         self.style = {
             "questionmark": "#e5c07b",
             "answermark": "#e5c07b",
@@ -347,7 +351,7 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
         while True:
             self.pprint()
             try:
-                user_input = listen()
+                user_input = self.stt.custom_listen()
             except KeyboardInterrupt:
                 return
 
@@ -465,6 +469,9 @@ if __name__ == "__main__":
                                                                         'with GPU enabled for text generation,'
                                                                         'possible values are 4, 8, 16 (default 16),'
                                                                         'lower values reduce VRAM usage')
+    parser.add_argument('-l', '--lang', action='store',
+                        default=['en'], nargs=1, type=str,
+                        help='generative models language (en, fr, de, it, es, ...)')
 
     args = parser.parse_args()
 

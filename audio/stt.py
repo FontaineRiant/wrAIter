@@ -20,8 +20,10 @@ def ignoreStderr():
 # custom WhisperMic for various fixes
 class CustomMic(WhisperMic):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        with ignoreStderr():
+            super().__init__(*args, **kwargs)
         self.logger = get_logger('whisper_mic', level='warning')
+        self.inference_device = self.audio_model.inference_device
         self.audio_model.to('cpu')
 
     def listen(self, timeout=None, phrase_time_limit=None):
@@ -34,16 +36,12 @@ class CustomMic(WhisperMic):
             if not self.result_queue.empty():
                 return self.result_queue.get()
 
-# init mic
-with ignoreStderr():
-    mic = CustomMic(english=True, device='cuda')
+    def custom_listen(self):
+        print('\n> Listening (ctrl+c for menu)')
+        with ignoreStderr():
+            if 'cuda' in str(self.inference_device):
+                self.audio_model.to('cuda')
+            result = self.listen()
+            self.audio_model.to('cpu')
+        return result
 
-def listen():
-    print('\n> Listening (ctrl+c for menu)')
-    with ignoreStderr():
-        mic.audio_model.to('cuda')
-        result = None
-        while not result:
-            result = mic.listen()
-        mic.audio_model.to('cpu')
-    return result

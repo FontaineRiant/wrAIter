@@ -13,11 +13,12 @@ from pysbd import Segmenter
 
 
 class Dub:
-    def __init__(self, gpu=True):
+    def __init__(self, gpu=True, lang='en'):
         mixer.init()
 
         self.lines_spoken = 0
         self.device = 'cuda' if gpu else 'cpu'
+        self.lang = lang
 
         self.model_name = "tts_models/multilingual/multi-dataset/xtts_v2"
 
@@ -129,18 +130,18 @@ class Dub:
                 for sens in sentences:
                     with self.suppress_stdout():
                         try:
-                            wav = self.synthesizer.tts(sens, speaker_wav=speaker, language_name='en',
+                            wav = self.synthesizer.tts(sens, speaker_wav=speaker, language_name=self.lang,
                                                        speaker_name=None, split_sentences=False)
                         except AssertionError:
                             try:
                                 # if input too big, try again with automatic split sentences
                                 wav = self.synthesizer.tts(sens, speaker_wav=speaker,
-                                                           language_name='en',
+                                                           language_name=self.lang,
                                                            speaker_name=None, split_sentences=True)
                             except AssertionError:
                                 # if input still too big, try again with commas instead of periods
                                 wav = self.synthesizer.tts(sens.replace(',', '.'), speaker_wav=speaker,
-                                                           language_name='en',
+                                                           language_name=self.lang,
                                                            speaker_name=None, split_sentences=True)
 
                     in_memory_wav=io.BytesIO()

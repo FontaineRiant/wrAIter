@@ -40,9 +40,11 @@ class Conversation(Story):
         return super().new(context)
 
     def clean_result(self, result):
-        result = re.sub(rf'("|{self.gen.enc.eos_token})[\s\S]*$', '', result)  # parse endoftext token that end the text
+        result = re.sub(rf'(\n|"|{self.gen.enc.eos_token})[\s\S]*$', '', result)  # parse endoftext token that end the text
         result = super().clean_result(result)
         if not result.endswith('"'):
+            if result[-1] not in ['.', '!', '?']:
+                result += '.'
             result += '"'
         return result
 

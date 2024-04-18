@@ -392,8 +392,8 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
             question = [
                 {
                     'type': list_input_type,
-                    'name': 'model_name',
-                    'message': f'choice:',
+                    'name': 'choice',
+                    'message': f'\nchoice:',
                     'choices': choices
                 }
             ]
@@ -401,7 +401,7 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
             user_input = {}
             while not user_input:
                 user_input = prompt(question, style=self.style)
-            user_input = user_input['model_name']
+            user_input = user_input['choice']
 
             if user_input == '< menu >':
                 return

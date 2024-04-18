@@ -20,7 +20,7 @@ and was fine-tuned to write fictional stories.
 * A conversation mode to chat directly with a fictional character,
 * Save, load, continue and revert functions.
 
-
+![image](https://github.com/FontaineRiant/wrAIter/assets/25899941/44173a2e-6cd4-4ec6-bf7a-f1028a23902c)
 
 ## Local Installation
 0. (Optional) Set up CUDA 11.1 to enable hardware acceleration if your GPU can take it.

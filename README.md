@@ -7,6 +7,8 @@ from for each paragraph.
 
 It has an option for voice input through the microphone, as well as a conversation mode to chat like you would to a home assistant without touching your keyboard.
 
+![image](https://github.com/FontaineRiant/wrAIter/assets/25899941/428f2821-b5a6-4c51-9791-0c1da2e9ab03)
+
 The AI writer is powered by any LLM that can be found on [Hugging Face](https://huggingface.co/), easily swappable through a command line argument.
 The default model has 2.7 billion parameters
 and was fine-tuned to write fictional stories.

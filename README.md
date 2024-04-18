@@ -1,4 +1,4 @@
-![](https://i.imgur.com/wbxNBBA.png)
+![image](https://github.com/FontaineRiant/wrAIter/assets/25899941/d40d33ba-acc6-4f48-b1f6-9232738980f8)
 
 wrAIter is a voiced AI that writes stories while letting the user interact and add to the story.
 You can write a paragraph, let the AI write the next one, you add another, etc.
@@ -21,7 +21,6 @@ and was fine-tuned to write fictional stories.
 * Save, load, continue and revert functions.
 
 
-![](https://i.imgur.com/bOSnLJi.png)
 
 ## Local Installation
 0. (Optional) Set up CUDA 11.1 to enable hardware acceleration if your GPU can take it.

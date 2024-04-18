@@ -23,7 +23,7 @@ class CustomMic(WhisperMic):
         with ignoreStderr():
             super().__init__(*args, **kwargs)
         self.logger = get_logger('whisper_mic', level='warning')
-        self.inference_device = self.audio_model.inference_device
+        self.inference_device = self.audio_model.device
         self.audio_model.to('cpu')
 
     def listen(self, timeout=None, phrase_time_limit=None):

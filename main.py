@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
-import json
 import os
-
-import torch.cuda
-
-import story.story
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import audio.stt
 from audio.stt import CustomMic
 from InquirerPy import prompt
 from story import grammars
@@ -328,7 +322,10 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
                 action = re.sub(r' *[§|~] *', '\n', action)
 
                 if isinstance(self.story, Conversation):
-                    action = f'\n{self.story.player}: "{action.strip()}"\n{self.story.bot}: "'
+                    if args.lang[0] == 'fr':
+                        action = f'\n[{self.story.player}:] {action.strip()}\n[{self.story.bot}:] '
+                    else:
+                        action = f'\n{self.story.player}: "{action.strip()}"\n{self.story.bot}: "'
 
                 self.pprint(action)
 
@@ -366,7 +363,10 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
                             lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
 
             if isinstance(self.story, Conversation):
-                action = f'\n{self.story.player}: "{action.strip()}"\n{self.story.bot}: "'
+                if args.lang[0] == 'fr':
+                    action = f'\n[{self.story.player}:] {action.strip()}\n[{self.story.bot}:] '
+                else:
+                    action = f'\n{self.story.player}: "{action.strip()}"\n{self.story.bot}: "'
 
             self.pprint(action)
 

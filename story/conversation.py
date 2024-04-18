@@ -32,7 +32,7 @@ class Conversation(Story):
             json.dump({'type': 'conversation', 'player':self.player, 'bot': self.bot, 'events': self.events}, fp)
 
     def act(self, action: str = '', tries: int = 10, eos_tokens=[]):
-        return super().act(action, tries, ['"', '?"', '!"', '."'] + eos_tokens)
+        return super().act(action, tries, ['"', '?"', '!"', '."', '\n'] + eos_tokens)
 
     def new(self, context: str = '', player='Me', bot='Bot'):
         self.player = player
@@ -42,9 +42,9 @@ class Conversation(Story):
     def clean_result(self, result):
         result = re.sub(rf'(\n|"|{self.gen.enc.eos_token})[\s\S]*$', '', result)  # parse endoftext token that end the text
         result = super().clean_result(result)
-        if not result.endswith('"'):
-            if result[-1] not in ['.', '!', '?']:
-                result += '.'
+        if result[-1] not in ['.', '!', '?', '"']:
+            result += '.'
+        if result[-1] not in ['"'] and f'[{self.bot}]' not in self.events[-1]:  # don't add " for french grammar
             result += '"'
         return result
 

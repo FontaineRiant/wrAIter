@@ -28,7 +28,7 @@ and was fine-tuned to write fictional stories.
 
 ## Local Installation
 0. (Optional) Set up CUDA 11.1 to enable hardware acceleration if your GPU can take it.
-1. Install python 3.7 or greater
+1. Install python 3.7 or greater (incompatible with 3.12 as of yet)
 2. Set the PHONEMIZER_ESPEAK_PATH environment variable to `C:\Program Files\eSpeak NG\espeak-ng.exe` or wherever you installed it. (windows only)
 3. Download or clone this repository.
 4. Run `install.ps1` (windows powershell) or `install.sh` (shell script).

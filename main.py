@@ -317,7 +317,7 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
 
                 # capitalize
                 action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
-                action = re.sub('[.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
+                action = re.sub(r'[.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
                                 lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
                 action = re.sub(r' *[§|~] *', '\n', action)
 
@@ -359,7 +359,7 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
 
             # capitalize
             action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
-            action = re.sub('^([a-z])|[\.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
+            action = re.sub(r'^([a-z])|[\.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
                             lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
 
             if isinstance(self.story, Conversation):
@@ -441,7 +441,7 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
         else:
             body = str(self.story)
 
-        print(f'{body}\033[96m{highlighted}\033[00m', end='')
+        print(f'{body}\033[96m{highlighted}\033[00m', end='', flush=True)
 
 
 if __name__ == "__main__":

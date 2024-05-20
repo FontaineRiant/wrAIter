@@ -6,8 +6,8 @@ from generator.generator import Generator
 from story.story import Story
 
 class Conversation(Story):
-    def __init__(self, gen: Generator, censor: bool):
-        super().__init__(gen, censor)
+    def __init__(self, gen: Generator, censor: bool, gen_length=500):
+        super().__init__(gen, censor, gen_length)
         self.player = 'Me'
         self.bot = 'Bot'
 

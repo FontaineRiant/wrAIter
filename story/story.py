@@ -16,7 +16,8 @@ def story_hash(string: str):
 
 
 class Story:
-    def __init__(self, gen: Generator, censor: bool):
+    def __init__(self, gen: Generator, censor: bool, gen_length=80):
+        self.gen_length=gen_length
         self.stream = True
         self.censor = censor
         self.gen = gen
@@ -49,12 +50,15 @@ class Story:
         self.events = [context]
         return str(self)
 
+    def get_max_history(self):
+        return min(self.gen.model.config.max_position_embeddings - self.gen_length, 6000)
+
     def clean_input(self, action=''):
         # find the biggest memory that fits max_tokens
         mem_ind = 1
         while len(
                 self.gen.enc.encode(self.events[0] + ''.join(filter(None, self.events[-mem_ind:]))
-                                    + action)) < self.gen.max_history and len(self.events) - 1 >= mem_ind:
+                                    + action)) < self.get_max_history() and len(self.events) - 1 >= mem_ind:
             mem_ind += 1
         mem_ind -= 1
 
@@ -97,7 +101,7 @@ class Story:
     def act(self, action: str = '', tries: int = 10, eos_tokens=[]):
         max_tries = tries
         input_str = self.clean_input(action)
-        result = self.gen.generate(input_str, stream=self.stream, eos_tokens=eos_tokens)
+        result = self.gen.generate(input_str, stream=self.stream, eos_tokens=eos_tokens, length=self.gen_length)
         result = self.clean_result(result)
 
         while (len(result) < 2
@@ -108,7 +112,7 @@ class Story:
             if tries == 0:
                 return None
             tries -= 1
-            result = self.gen.generate(input_str, stream=self.stream, eos_tokens=eos_tokens)
+            result = self.gen.generate(input_str, stream=self.stream, eos_tokens=eos_tokens, length=self.gen_length)
             print(result)
             result = self.clean_result(result)
 
@@ -122,7 +126,7 @@ class Story:
         input_str = self.clean_input()
 
         while len(res) < n and tries > 0:
-            result = self.gen.generate(input_str, stream=False)
+            result = self.gen.generate(input_str, stream=False, length=self.gen_length)
             result = self.clean_result(result)
 
             if not (len(result) < 2

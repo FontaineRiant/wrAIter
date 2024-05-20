@@ -5,13 +5,11 @@ import torch
 class Generator:
     def __init__(self,
                  model_name='KoboldAI/OPT-2.7B-Nerys-v2',
-                 length=80,
                  gpu=True,
                  precision=16,
                  offload_to_memory=False):
         """
         :model_name='KoboldAI/OPT-2.7B-Nerys-v2' : String, which model to use from huggingface
-        :length=None : Number of tokens in generated text
         :gpu: use gpu (default: True)
         :precision: floating point precision
         :offload_to_memory: stores the model in memory when not in use (eat loads of RAM but saves vram)
@@ -32,11 +30,9 @@ class Generator:
 
         self.enc = AutoTokenizer.from_pretrained(model_name, add_prefix_space=False)
 
-        self.length = length
-        self.max_history = min(self.model.config.max_position_embeddings - self.length, 6000)
         self.streamer = TextStreamer(self.enc, skip_prompt=True)
 
-    def generate(self, prompt: str, stream=True, eos_tokens=[]):
+    def generate(self, prompt: str, stream=True, eos_tokens=[], length=80):
         eos_token_ids = [self.enc.encode(term)[-1] for term in eos_tokens]
 
         model_inputs = self.enc([prompt], return_tensors='pt').to(self.device)
@@ -48,7 +44,7 @@ class Generator:
         print('\033[96m', end='')
         generated_ids = self.model.generate(
             **model_inputs,
-            max_new_tokens=self.length,
+            max_new_tokens=length,
             do_sample=True,
             use_cache=True,
             pad_token_id=self.enc.eos_token_id,

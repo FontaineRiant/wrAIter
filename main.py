@@ -5,7 +5,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from audio.stt import CustomMic
 from InquirerPy import prompt
-from story import grammars
 from story.story import Story
 from story.story import SAVE_PATH as SAVE_PATH
 from story.conversation import Conversation
@@ -125,38 +124,19 @@ class Game:
 
     def new_prompt(self, conv=False):
         if not conv:
-            menu = [{
-                'type': list_input_type,
-                'message': 'Choose a starting prompt',
-                'name': 'action',
-                'choices': ['< Back', 'custom'] + sorted([
-                    f[:-11] for f in os.listdir('./story/grammars') if f.endswith('_rules''.json')
-                ])
+            questions = [{
+                'type': 'input',
+                'message': "Type a short context that the AI won't forget, so preferably describe aspects of the setting"
+                           "\nthat you expect to remain true as the story develops. Who are your characters? What "
+                           "world do they live in? (Optional)\n",
+                'name': 'context'
             }]
 
-            action = {}
-            while not action:
-                action = prompt(menu, style=self.style)
-            action = action['action']
+            custom_input = {}
+            while not custom_input:
+                custom_input = prompt(questions, style=self.style)
 
-            if action == '< Back':
-                return
-            elif action == 'custom':
-                questions = [{
-                    'type': 'input',
-                    'message': "Type a short context that the AI won't forget, so preferably describe aspects of the setting"
-                               "\nthat you expect to remain true as the story develops. Who are your characters? What "
-                               "world do they live in? (Optional)\n",
-                    'name': 'context'
-                }]
-
-                custom_input = {}
-                while not custom_input:
-                    custom_input = prompt(questions, style=self.style)
-
-                context = custom_input['context'].strip()
-            else:
-                context = grammars.generate(action, "context").strip()
+            context = custom_input['context'].strip()
 
             print("Generating story ...")
             print("Type /help or /h to get a list of commands.")

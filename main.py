@@ -292,7 +292,10 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
                 input('Press enter to continue.')
             else:
                 action = user_input.strip()
-                if len(action) > 0:
+
+                if len(self.story.events) <= 1:
+                    action = '\n' + action
+                elif action:
                     action = ' ' + action
 
                 # capitalize
@@ -334,7 +337,9 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
 
             action = user_input.strip()
 
-            if len(action) > 0:
+            if len(self.story.events) <= 1:
+                action = '\n' + action
+            elif action:
                 action = ' ' + action
 
             # capitalize

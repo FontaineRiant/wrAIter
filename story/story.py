@@ -69,7 +69,7 @@ class Story:
             mem_ind -= 1
 
         text = events_clipped + action
-        return text.strip()
+        return text
 
     def clean_result(self, result):
         result = re.sub(rf'{self.gen.enc.eos_token}[\s\S]*$', '', result)  # parse endoftext token that end the text
@@ -113,7 +113,7 @@ class Story:
                 return None
             tries -= 1
             result = self.gen.generate(input_str, stream=self.stream, eos_tokens=eos_tokens, length=self.gen_length)
-            print(result)
+            # print(result)
             result = self.clean_result(result)
 
         self.events.append(action)

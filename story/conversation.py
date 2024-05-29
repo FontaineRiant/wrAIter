@@ -42,9 +42,9 @@ class Conversation(Story):
     def clean_result(self, result):
         result = re.sub(rf'(\n|"|{self.gen.enc.eos_token})[\s\S]*$', '', result)  # parse endoftext token that end the text
         result = super().clean_result(result)
-        if result[-1] not in ['.', '!', '?', '"']:
+        if result and result[-1] not in ['.', '!', '?', '"']:
             result += '.'
-        if result[-1] not in ['"'] and f'[{self.bot}]' not in self.events[-1]:  # don't add " for french grammar
+        if result and result[-1] not in ['"'] and f'[{self.bot}]' not in self.events[-1]:  # don't add " for french grammar
             result += '"'
         return result
 

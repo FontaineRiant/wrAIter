@@ -12,6 +12,8 @@ from generator.generator import Generator
 import argparse
 import re
 import readline  # actually necessary for pyinquirer to work consistently
+import shutil
+from textwrap import TextWrapper
 
 
 class Game:
@@ -126,10 +128,13 @@ class Game:
         if not conv:
             questions = [{
                 'type': 'input',
-                'message': "Type a short context that the AI won't forget, so preferably describe aspects of the setting"
-                           "\nthat you expect to remain true as the story develops. Who are your characters? What "
-                           "world do they live in? (Optional)\n",
-                'name': 'context'
+                'message': "Type a short context that the AI won't forget, so preferably describe aspects of"
+                           "\nthe setting that you expect to remain true as the story develops."
+                           "\nWho are your characters? What world do they live in?"
+                           "\nYou can also use a tagging syntax like [Genre: fantasy, horror] for example"
+                           "\nor leave it empty.",
+                'name': 'context',
+                'multiline': True
             }]
 
             custom_input = {}
@@ -142,7 +147,6 @@ class Game:
             print("Type /help or /h to get a list of commands.")
             self.story = Story(self.gen, censor=args.censor)
             self.story.new(context)
-            self.voice_on_next_loop = True
         else:
             questions = [{
                 'type': 'input',
@@ -157,9 +161,9 @@ class Game:
             }, {
                 'type': 'input',
                 'message': "Type a short context about who you're talking to (or don't and it will be random).\n"
-                           'For example: "The following conversation happens after a car crash."\n'
-                           ">",
-                'name': 'context'
+                           'For example: "The following conversation happens after a car crash."',
+                'name': 'context',
+                'multiline': True
             }]
 
             custom_input = {}
@@ -173,7 +177,7 @@ class Game:
             print("Type /help or /h to get a list of commands.")
             self.story = Conversation(self.gen, censor=args.censor)
             self.story.new(context, player=player, bot=bot)
-            self.voice_on_next_loop = False
+        self.voice_on_next_loop = False
 
     def load_prompt(self):
         menu = [{
@@ -231,12 +235,13 @@ class Game:
 
             if user_input in ['/debug', '/d']:
                 print(f"""
-story title:      "{self.story.title}"
-number of events: {len(self.story.events)}
-number of tokens: {len(self.story.gen.enc.encode(str(self.story)))}/{self.story.get_max_history()} (trimmed to {
+story title:             "{self.story.title}"
+context/starting prompt: "{self.story.events[0]}"
+number of events:        {len(self.story.events)}
+number of tokens:        {len(self.story.gen.enc.encode(str(self.story)))}/{self.story.get_max_history()} (trimmed to {
                 len(self.story.gen.enc.encode(self.story.clean_input()))})
-wordcloud:        {self.story.wordcloud()}
-fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.story).lower()).split()),
+wordcloud:               {self.story.wordcloud()}
+fanciest words:          {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.story).lower()).split()),
                                     key=lambda x: len(x), reverse=True)[:5])}
 """)
                 input('Press enter to continue.')
@@ -249,9 +254,20 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
                     'type': 'input',
                     'name': 'edit',
                     'message': '',
-                    'default': self.story.events[-1]
+                    'default': self.story.events[-1],
+                    'multiline':True
                 }
                 self.story.events[-1] = prompt(question, style=self.style)['edit']
+
+            elif user_input in ['/c', '/context']:
+                question = {
+                    'type': 'input',
+                    'name': 'edit context',
+                    'message': 'Edit context/starting prompt:\n',
+                    'default': self.story.events[0],
+                    'multiline':True
+                }
+                self.story.events[0] = prompt(question, style=self.style)['edit context']
 
             elif user_input in ['/s', '/save']:
                 self.save_prompt()
@@ -285,6 +301,7 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
                       '/r   /revert   revert last action and response (if there are none, regenerate an intro)\n'
                       '/R   /redo     cancel and redo last response response\n'
                       '/e   /edit     edit last story event\n'
+                      '/c   /context     edit context/starting prompt\n'
                       '/s   /save     save story\n'
                       '/d   /debug    show current story state\n'
                       'Tips:          Press Enter without typing anything to let the AI continue for you.'
@@ -416,6 +433,9 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
                     self.tts.deep_play(user_input)
 
     def pprint(self, highlighted=None):
+        width = shutil.get_terminal_size(fallback=(82,40)).columns
+        wrapper = TextWrapper(width=width, replace_whitespace=False)
+
         os.system('cls' if os.name == 'nt' else 'clear')
         if args.jupyter:
             print('\n' * 25)  # dirty output clear for jupyter
@@ -426,7 +446,10 @@ fanciest words:   {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.
         else:
             body = str(self.story)
 
-        print(f'{body}\033[96m{highlighted}\033[00m', end='', flush=True)
+        body= f'{body}\033[96m{highlighted}\033[00m'
+
+        print('\n'.join(['\n'.join(wrapper.wrap(line)) for line in body.splitlines()]),
+              end='', flush=True)
 
 
 if __name__ == "__main__":

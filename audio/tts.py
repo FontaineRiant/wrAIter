@@ -86,73 +86,77 @@ class Dub:
 
 
     def deep_play(self, text):
-        narrator = ['./audio/voices/narrator/' + f for f in os.listdir('./audio/voices/narrator')]
-        char1 = ['./audio/voices/character1/' + f for f in os.listdir('./audio/voices/character1')]
-        char2 = ['./audio/voices/character2/' + f for f in os.listdir('./audio/voices/character2')]
+        try:
+            narrator = ['./audio/voices/narrator/' + f for f in os.listdir('./audio/voices/narrator')]
+            char1 = ['./audio/voices/character1/' + f for f in os.listdir('./audio/voices/character1')]
+            char2 = ['./audio/voices/character2/' + f for f in os.listdir('./audio/voices/character2')]
 
-        files = []
+            files = []
 
-        for t in text.split('\n'):
-            cnt = 0
+            for t in text.split('\n'):
+                cnt = 0
 
-            self.lines_spoken += 1
+                self.lines_spoken += 1
 
-            lines = t.split('"')
-            for line in lines:
-                if cnt % 2:
-                    # within quotes
-                    speaker = char1 if self.lines_spoken % 2 else char2
-                else:
-                    # out of quotes -> narrator
-                    speaker = narrator
-
-                cnt += 1
-
-                line = self.clean_input(line)
-
-                if not line or speaker is None:
-                    continue
-
-                if len(line) > 1 and line[-1] == '.':
-                    line = line[:-1]  # remove trailing dots, they're often pronounced "dot"
-
-                # split sentences manually to then regroup tiny sentences together (one-word inputs sound ugly)
-                sentences = Segmenter(language='en', clean=True).segment(line)
-                i = 0
-                while i < len(sentences) - 1:
-                    if len(sentences[i]) < 25 or len(sentences[i + 1]) < 25:
-                        sentences[i] += ' ' + sentences.pop(i + 1)
+                lines = t.split('"')
+                for line in lines:
+                    if cnt % 2:
+                        # within quotes
+                        speaker = char1 if self.lines_spoken % 2 else char2
                     else:
-                        i += 1
+                        # out of quotes -> narrator
+                        speaker = narrator
 
-                self.synthesizer.tts_model.to(self.device)
+                    cnt += 1
 
-                for sens in sentences:
-                    with self.suppress_stdout():
-                        try:
-                            wav = self.synthesizer.tts(sens, speaker_wav=speaker, language_name=self.lang,
-                                                       speaker_name=None, split_sentences=False)
-                        except AssertionError:
+                    line = self.clean_input(line)
+
+                    if not line or speaker is None:
+                        continue
+
+                    if len(line) > 1 and line[-1] == '.':
+                        line = line[:-1]  # remove trailing dots, they're often pronounced "dot"
+
+                    # split sentences manually to then regroup tiny sentences together (one-word inputs sound ugly)
+                    sentences = Segmenter(language='en', clean=True).segment(line)
+                    i = 0
+                    while i < len(sentences) - 1:
+                        if len(sentences[i]) < 25 or len(sentences[i + 1]) < 25:
+                            sentences[i] += ' ' + sentences.pop(i + 1)
+                        else:
+                            i += 1
+
+                    self.synthesizer.tts_model.to(self.device)
+
+                    for sens in sentences:
+                        with self.suppress_stdout():
                             try:
-                                # if input too big, try again with automatic split sentences
-                                wav = self.synthesizer.tts(sens, speaker_wav=speaker,
-                                                           language_name=self.lang,
-                                                           speaker_name=None, split_sentences=True)
+                                wav = self.synthesizer.tts(sens, speaker_wav=speaker, language_name=self.lang,
+                                                           speaker_name=None, split_sentences=False)
                             except AssertionError:
-                                # if input still too big, try again with commas instead of periods
-                                wav = self.synthesizer.tts(sens.replace(',', '.'), speaker_wav=speaker,
-                                                           language_name=self.lang,
-                                                           speaker_name=None, split_sentences=True)
+                                try:
+                                    # if input too big, try again with automatic split sentences
+                                    wav = self.synthesizer.tts(sens, speaker_wav=speaker,
+                                                               language_name=self.lang,
+                                                               speaker_name=None, split_sentences=True)
+                                except AssertionError:
+                                    # if input still too big, try again with commas instead of periods
+                                    wav = self.synthesizer.tts(sens.replace(',', '.'), speaker_wav=speaker,
+                                                               language_name=self.lang,
+                                                               speaker_name=None, split_sentences=True)
 
-                    in_memory_wav=io.BytesIO()
-                    self.synthesizer.save_wav(wav, in_memory_wav)
-                    files.append(in_memory_wav)
+                        in_memory_wav=io.BytesIO()
+                        self.synthesizer.save_wav(wav, in_memory_wav)
+                        files.append(in_memory_wav)
 
-                self.synthesizer.tts_model.to('cpu')
+                    self.synthesizer.tts_model.to('cpu')
 
-        if files:
-            file = self.postprocess(files, 1.1)
-            self.playsound(file)
+            if files:
+                file = self.postprocess(files, 1.1)
+                self.playsound(file)
+
+        except KeyboardInterrupt:
+            pass
 
     def postprocess(self, files, pitch=1.0):
         processedfile = io.BytesIO()

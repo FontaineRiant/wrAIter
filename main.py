@@ -5,6 +5,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from audio.stt import CustomMic
 from InquirerPy import prompt
+from InquirerPy import inquirer
 from story.story import Story
 from story.story import SAVE_PATH as SAVE_PATH
 from story.conversation import Conversation
@@ -18,46 +19,25 @@ from textwrap import TextWrapper
 
 class Game:
     def __init__(self):
+        self.default_input = ''
         self.gen = Generator(model_name=args.model[0], gpu=not args.cputext, precision=args.precision)
-        self.tts = None if args.jupyter or args.silent else Dub(gpu=not args.cputts, lang=args.lang[0])
-        self.stt = CustomMic(english=(args.lang[0]=='en'), model='medium')
-        self.style = {
-            "questionmark": "#e5c07b",
-            "answermark": "#e5c07b",
-            "answer": "#61afef",
-            "input": "#98c379",
-            "question": "",
-            "answered_question": "",
-            "instruction": "#abb2bf",
-            "long_instruction": "#abb2bf",
-            "pointer": "#61afef",
-            "checkbox": "#98c379",
-            "separator": "",
-            "skipped": "#5c6370",
-            "validator": "",
-            "marker": "#e5c07b",
-            "fuzzy_prompt": "#c678dd",
-            "fuzzy_info": "#abb2bf",
-            "fuzzy_border": "#4b5263",
-            "fuzzy_match": "#c678dd",
-            "spinner_pattern": "#e5c07b",
-            "spinner_text": "",
-        }
+        self.tts = None if args.silent else Dub(gpu=not args.cputts, lang=args.lang[0])
+        self.stt = CustomMic(english=(args.lang[0] == 'en'), model='medium')
         self.story = Story(self.gen, censor=args.censor)
         self.loop = self.loop_text
-        self.voice_on_next_loop = False
         self.sample_hashes = []
+        self.keybind_pressed = None
 
     def play(self):
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')
 
             width = shutil.get_terminal_size(fallback=(82, 40)).columns
-            print("▄"*width)
+            print("▄" * width)
             print("░███░█░▄▄▀█░▄▄▀█▄░▄█▄░▄█░▄▄█░▄▄▀".center(width, '█'))
             print("▄▀░▀▄█░▀▀▄█░▀▀░██░███░██░▄▄█░▀▀▄".center(width, '█'))
             print("█▄█▄██▄█▄▄█░██░█▀░▀██▄██▄▄▄█▄█▄▄".center(width, '█'))
-            print("▀"*width)
+            print("▀" * width)
 
             choices = []
             if (len([f for f in os.listdir(SAVE_PATH) if f.endswith('.json')]) > 0
@@ -79,17 +59,9 @@ class Game:
             if len(self.story.events) > 1:
                 choices.insert(1, 'save')
 
-            main_menu = [{
-                'type': list_input_type,
-                'message': 'Choose an option',
-                'name': 'action',
-                'choices': choices
-            }]
-
-            action = {}
-            while not action:
-                action = prompt(main_menu, style=self.style)
-            action = action['action']
+            action = inquirer.select('Choose an option',
+                                        choices=choices,
+                                        raise_keyboard_interrupt=False).execute()
 
             if action == 'new story':
                 self.new_prompt()
@@ -121,80 +93,60 @@ class Game:
             else:
                 print('invalid input')
 
-            if len(self.story.events) != 0:
+            if len(self.story.events) > 0:
                 self.loop()
 
     def new_prompt(self, conv=False):
         if not conv:
-            questions = [{
-                'type': 'input',
-                'message': "Type a short context that the AI won't forget, so preferably describe aspects of"
-                           "\nthe setting that you expect to remain true as the story develops."
-                           "\nWho are your characters? What world do they live in?"
-                           "\nYou can also use a tagging syntax like [Genre: fantasy, horror] for example"
-                           "\nor leave it empty.",
-                'name': 'context',
-                'multiline': True
-            }]
+            context = inquirer.text("Type a short context that the AI won't forget, so "
+                                    "preferably describe aspects\n"
+                                    "of the setting that you expect to remain true as the story develops."
+                                    "\nWho are your characters? What world do they live in?"
+                                    "\nYou can also use a tagging syntax like [Genre: fantasy, horror] for example"
+                                    "\nor leave it empty.",
+                                    qmark='', amark='', raise_keyboard_interrupt=False,
+                                    multiline=True, instruction=' ', mandatory=False,
+                                    long_instruction='Press Enter twice to send, Ctrl-C to cancel',
+                                    keybindings={'answer': [{'key': ['enter', 'enter']}]}).execute()
+            if context is None:
+                return
 
-            custom_input = {}
-            while not custom_input:
-                custom_input = prompt(questions, style=self.style)
-
-            context = custom_input['context'].strip()
-
-            print("Generating story ...")
-            print("Type /help or /h to get a list of commands.")
             self.story = Story(self.gen, censor=args.censor)
             self.story.new(context)
         else:
-            questions = [{
-                'type': 'input',
-                'message': "Enter your tag. It can be 'You', 'A', 'B', 'C', 'Me', your name, ...\n>",
-                'name': 'player',
-                'default': 'Me'
-            }, {
-                'type': 'input',
-                'message': "Enter the AI's tag. It can be 'Them', 'Him', 'Her', 'Bot', their name, ...\n>",
-                'name': 'bot',
-                'default': 'Bot'
-            }, {
-                'type': 'input',
-                'message': "Type a short context about who you're talking to (or don't and it will be random).\n"
-                           'For example: "The following conversation happens after a car crash."',
-                'name': 'context',
-                'multiline': True
-            }]
+            player = inquirer.text("Enter your tag. It can be 'You', 'A', 'B', 'C', 'Me', your name, ...\n>",
+                                   qmark='', amark='', raise_keyboard_interrupt=False, default='Me', mandatory=False,
+                                   long_instruction='Ctrl-C to cancel').execute()
+            if player is None:
+                return
+            bot = inquirer.text("Enter the AI's tag. It can be 'Them', 'Him', 'Her', 'Bot', their name, ...\n>",
+                                qmark='', amark='', raise_keyboard_interrupt=False, default='Bot', mandatory=False,
+                                long_instruction='Ctrl-C to cancel').execute()
+            if bot is None:
+                return
+            context = inquirer.text("Type a short context about who you're talking to "
+                                    "(or don't and it will be random).\n"
+                                    'For example: "The following conversation happens after a car crash."',
+                                    qmark='', amark='', raise_keyboard_interrupt=False,
+                                    multiline=True, instruction=' ', mandatory=False,
+                                    long_instruction='Press Enter twice to send, Ctrl-C to cancel',
+                                    keybindings={'answer': [{'key': ['enter', 'enter']}]}).execute()
+            if context is None:
+                return
 
-            custom_input = {}
-            while not custom_input:
-                custom_input = prompt(questions, style=self.style)
-            context = custom_input['context'].strip()
-            player = custom_input['player'].strip()
-            bot = custom_input['bot'].strip()
-
-            print("Generating story ...")
-            print("Type /help or /h to get a list of commands.")
             self.story = Conversation(self.gen, censor=args.censor)
-            self.story.new(context, player=player, bot=bot)
-        self.voice_on_next_loop = False
+            self.story.new(context, player=player.strip(), bot=bot.strip())
 
     def load_prompt(self):
-        menu = [{
-            'type': list_input_type,
-            'message': 'Choose a file to load',
-            'name': 'action',
-            'choices': ['< Back'] + sorted([f[:-5] for f in os.listdir(SAVE_PATH) if f.endswith('.json')],
-                                           key=lambda name: os.path.getmtime(os.path.join(SAVE_PATH, name + '.json')),
-                                           reverse=True)
-        }]
+        action = inquirer.select('Choose a file to load',
+                                 choices=sorted(
+                                     [f[:-5] for f in os.listdir(SAVE_PATH) if f.endswith('.json')],
+                                     key=lambda name: os.path.getmtime(os.path.join(SAVE_PATH, name + '.json')),
+                                     reverse=True),
+                                 raise_keyboard_interrupt=False, mandatory=False,
+                                 long_instruction='Ctrl-C to cancel').execute()
 
-        action = {}
-        while not action:
-            action = prompt(menu, style=self.style)
-        action = action['action']
-
-        if action != '< Back':
+        if action is not None:
             if action.endswith(' (conversation)'):
                 self.story = Conversation(self.gen, censor=args.censor)
             else:
@@ -202,113 +154,118 @@ class Game:
             self.story.load(action)
 
     def save_prompt(self):
-        questions = [{
-            'type': 'input',
-            'message': "Type a name for your save file.",
-            'name': 'user_input',
-            'default': self.story.title
-        }]
-
-        user_input = {}
-        while not user_input or not user_input['user_input']:
-            user_input = prompt(questions, style=self.style)
-        user_input = user_input['user_input']
-
-        try:
-            self.story.save(user_input)
-            print(f'Successfully saved {user_input}')
-        except:
-            print(f'Failed to save the game as {user_input}')
+        user_input = inquirer.text("Type a name for your save file.\n>",
+                                   default=self.story.title, mandatory=False,
+                                   qmark='', amark='', raise_keyboard_interrupt=False).execute()
+        if user_input is not None:
+            user_input = user_input.strip()
+            try:
+                self.story.save(user_input)
+                print(f'Successfully saved {user_input}')
+            except:
+                print(f'Failed to save the game as {user_input}')
 
     def loop_text(self):
         self.pprint()
-        if self.voice_on_next_loop and not args.jupyter and not args.silent:
-            self.tts.deep_play(str(self.story))
-            self.voice_on_next_loop = False
+
+        self.default_input = ''
 
         while True:
             self.pprint()
-            user_input = input('\n> ').strip()
+            inquirer_prompt = inquirer.text(message='', qmark='', amark='', raise_keyboard_interrupt=False,
+                                            mandatory=False, default=self.default_input, multiline=True,
+                                            long_instruction='Press Enter twice to send, Ctrl-L for a list of commands',
+                                            instruction=' ', keybindings={'answer': [{'key': ['enter', 'enter']}]})
+            self.default_input = ''
 
-            if user_input in ['/menu', '/m']:
-                return
+            # Declare keybinds
+            @inquirer_prompt.register_kb('escape')
+            def menu(event):
+                self.keybind_pressed = menu
+                inquirer_prompt._handle_skip(event)
 
-            if user_input in ['/debug', '/d']:
-                print(f"""
-story title:             "{self.story.title}"
-context/starting prompt: "{self.story.events[0]}"
-number of events:        {len(self.story.events)}
-number of tokens:        {len(self.story.gen.enc.encode(str(self.story)))}/{self.story.get_max_history()} (trimmed to {
-                len(self.story.gen.enc.encode(self.story.clean_input()))})
-wordcloud:               {self.story.wordcloud()}
-fanciest words:          {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', str(self.story).lower()).split()),
-                                    key=lambda x: len(x), reverse=True)[:5])}
-""")
+            @inquirer_prompt.register_kb('c-w')
+            def wordstats(event):
+                tokens_current = len(self.story.gen.enc.encode(str(self.story)))
+                tokens_max = self.story.get_max_history()
+                tokens_trimmed = len(self.story.gen.enc.encode(self.story.clean_input()))
+                fancy_words = ", ".join(sorted(set(re.sub(
+                    r"[^A-Za-z0-9_]+", " ",
+                    str(self.story).lower()).split()), key=lambda x: len(x), reverse=True)[:5])
+                print(f'\n\nstory title:             "{self.story.title}"\n'
+                      f'context/starting prompt:\n'
+                      f'{self.story.events[0]}\n\n'
+                      f'number of events:        {len(self.story.events)}\n'
+                      f'number of tokens:        {tokens_current}/{tokens_max} (trimmed to {tokens_trimmed})\n'
+                      f'wordcloud:               {self.story.wordcloud()}\n'
+                      f'fanciest words:          {fancy_words}\n')
                 input('Press enter to continue.')
+                inquirer_prompt._handle_skip(event)
 
-            elif user_input in ['/e', '/edit']:
-                if self.tts is not None:
-                    self.tts.stop()
+            @inquirer_prompt.register_kb('c-p')
+            def edit_story_prompt(event):
+                self.keybind_pressed = edit_story_prompt
+                inquirer_prompt._handle_skip(event)
 
-                question = {
-                    'type': 'input',
-                    'name': 'edit',
-                    'message': '',
-                    'default': self.story.events[-1],
-                    'multiline':True
-                }
-                self.story.events[-1] = prompt(question, style=self.style)['edit']
+            @inquirer_prompt.register_kb('c-s')
+            def save(event):
+                self.keybind_pressed = save
+                inquirer_prompt._handle_skip(event)
 
-            elif user_input in ['/c', '/context']:
-                question = {
-                    'type': 'input',
-                    'name': 'edit context',
-                    'message': 'Edit context/starting prompt:\n',
-                    'default': self.story.events[0],
-                    'multiline':True
-                }
-                self.story.events[0] = prompt(question, style=self.style)['edit context']
-
-            elif user_input in ['/s', '/save']:
-                self.save_prompt()
-
-            elif user_input in ['/revert', '/r']:
+            @inquirer_prompt.register_kb('c-z')
+            def revert(event):
                 if self.tts is not None:
                     self.tts.stop()
                 if len(self.story.events) <= 1:
                     pass
-                elif len(self.story.events) == 2:
-                    self.story.events = self.story.events[:-1]
-                else:
+                elif isinstance(self.story, Conversation):
                     self.story.events = self.story.events[:-2]
+                else:
+                    self.default_input = self.story.events[-1]
+                    self.story.events = self.story.events[:-1]
 
-            elif user_input in ['/redo', '/R']:
+                inquirer_prompt._handle_skip(event)
+
+            @inquirer_prompt.register_kb('c-l')
+            def command_list(event):
+                print('\n\nKnown commands:\n'
+                      'esc      go to main menu\n'
+                      'ctrl-l   display this list\n'
+                      'ctrl-z or ctrl-y  undo and edit last action or response\n'
+                      'ctrl-p   edit context/starting prompt\n'
+                      'ctrl-s   save story\n'
+                      'ctrl-w   print word count and other stats\n'
+                      'ctrl-c   clear current text box, interrupt generation and audio\n')
+                input('Press enter to continue.')
+                inquirer_prompt._handle_skip(event)
+
+            # execute inquirer prompt
+            self.keybind_pressed = None
+            user_input = inquirer_prompt.execute()
+
+            # Handle keybinds that require additional user inputs
+            if self.keybind_pressed == menu:
+                return
+            elif self.keybind_pressed == edit_story_prompt:
+                new_context = inquirer.text('Edit context/starting prompt:',
+                                            default=self.story.events[0],
+                                            qmark='', amark='', raise_keyboard_interrupt=False,
+                                            mandatory=False, multiline=True, instruction=' ',
+                                            long_instruction='Press Enter twice to send, Ctrl-C to cancel',
+                                            keybindings={'answer': [{'key': ['enter', 'enter']}]}).execute()
+                if new_context is not None:
+                    self.story.events[0] = new_context
+
+            elif self.keybind_pressed == save:
+                self.save_prompt()
+            elif user_input is None:
+                # CTRL+C case
                 if self.tts is not None:
                     self.tts.stop()
-                if len(self.story.events) <= 1:
-                    pass
-                else:
-                    self.story.events = self.story.events[:-1]
-                self.pprint()
-                result = self.story.act()
-                if not args.jupyter and not args.silent:
-                    self.tts.deep_play(result)
 
-            elif user_input.startswith('/'):
-                print('Known commands:\n'
-                      '/h   /help     display this help\n'
-                      '/m   /menu     go to main menu (it has a save option)\n'
-                      '/r   /revert   revert last action and response (if there are none, regenerate an intro)\n'
-                      '/R   /redo     cancel and redo last response response\n'
-                      '/e   /edit     edit last story event\n'
-                      '/c   /context     edit context/starting prompt\n'
-                      '/s   /save     save story\n'
-                      '/d   /debug    show current story state\n'
-                      'Tips:          Press Enter without typing anything to let the AI continue for you.'
-                      '               Use "~" or "§" in your inputs to insert a line break.')
-                input('Press enter to continue.')
-            else:
-                action = user_input.strip()
+            # handle text input
+            if user_input is not None:
+                action = user_input.strip(' ')
 
                 if len(self.story.events) <= 1:
                     action = '\n' + action
@@ -319,7 +276,6 @@ fanciest words:          {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', st
                 action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
                 action = re.sub(r'[.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
                                 lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
-                action = re.sub(r' *[§|~] *', '\n', action)
 
                 if isinstance(self.story, Conversation):
                     if args.lang[0] == 'fr':
@@ -329,21 +285,23 @@ fanciest words:          {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', st
 
                 self.pprint(action)
 
-                result = self.story.act(action)
-                self.pprint()
-                if result is None:
-                    print("--- The model failed to produce an decent output after multiple tries. Try something else.")
-                else:
-                    if not args.jupyter and not args.silent:
-                        if isinstance(self.story, Conversation):
-                            self.tts.deep_play(result)
-                        else:
-                            self.tts.deep_play(action + result)
+                try:
+                    result = self.story.act(action)
+                    self.pprint()
+                    if result is None:
+                        print(
+                            "--- The model failed to produce an decent output after multiple tries. Try something else.")
+                    else:
+                        if not args.silent:
+                            if isinstance(self.story, Conversation):
+                                self.tts.deep_play(result)
+                            else:
+                                self.tts.deep_play(action + result)
+                except KeyboardInterrupt:
+                    self.pprint()
+
     def loop_voice(self):
         self.pprint()
-        if self.voice_on_next_loop and not args.jupyter and not args.silent:
-            self.tts.deep_play(str(self.story))
-            self.voice_on_next_loop = False
 
         while True:
             self.pprint()
@@ -372,19 +330,18 @@ fanciest words:          {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', st
 
             self.pprint(action)
 
-            result = self.story.act(action)
-            self.pprint()
-            if result is None:
-                print("--- The model failed to produce an decent output after multiple tries. Try something else.")
-            else:
-                if not args.jupyter:
+            try:
+                result = self.story.act(action)
+                self.pprint()
+                if result is None:
+                    print("--- The model failed to produce an decent output after multiple tries. Try something else.")
+                else:
                     self.tts.deep_play(result)
+            except KeyboardInterrupt:
+                self.pprint()
 
     def loop_choice(self):
         self.pprint()
-        if self.voice_on_next_loop and not args.jupyter and not args.silent:
-            self.tts.deep_play(str(self.story))
-            self.voice_on_next_loop = False
 
         while True:
             if isinstance(self.story, Conversation):
@@ -394,51 +351,39 @@ fanciest words:          {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', st
             self.pprint()
             results = self.story.gen_n_results(3)
             results = {r.strip('\n').split('\n')[0]: r for r in results}
-            choices = ['< more >'] + list(results.keys()) + ['< revert >', '< menu >']
-            print()
-            question = [
-                {
-                    'type': list_input_type,
-                    'name': 'choice',
-                    'message': f'choice:',
-                    'choices': choices
-                }
-            ]
+            choices = list(results.keys()) + ['< revert >', '< more >']
 
-            user_input = {}
-            while not user_input:
-                user_input = prompt(question, style=self.style)
-            user_input = user_input['choice']
-
-            if user_input == '< menu >':
+            user_input = inquirer.select('\nChoice:', amark='', qmark='',
+                                         choices=choices,
+                                         raise_keyboard_interrupt=False, mandatory=False,
+                                         long_instruction='Ctrl-C for menu').execute()
+            if user_input is None:
                 return
+            elif user_input == '< more >':
+                continue
             elif user_input == '< revert >':
                 if self.tts is not None:
                     self.tts.stop()
                 if len(self.story.events) < 4:
                     self.story.new(self.story.events[0])
                     self.pprint()
-                    if not args.jupyter and not args.silent:
+                    if not args.silent:
                         self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])))
                 else:
                     self.story.events = self.story.events[:-1]
                     self.pprint()
-            elif user_input == '< more >':
-                continue
             else:
                 user_input = results[user_input]
                 self.story.events.append(user_input)
                 self.pprint()
-                if not args.jupyter and not args.silent:
+                if not args.silent:
                     self.tts.deep_play(user_input)
 
     def pprint(self, highlighted=None):
-        width = shutil.get_terminal_size(fallback=(82,40)).columns
+        width = shutil.get_terminal_size(fallback=(82, 40)).columns
         wrapper = TextWrapper(width=width, replace_whitespace=False)
 
         os.system('cls' if os.name == 'nt' else 'clear')
-        if args.jupyter:
-            print('\n' * 25)  # dirty output clear for jupyter
 
         if highlighted is None:
             highlighted = self.story.events[-1]
@@ -446,7 +391,7 @@ fanciest words:          {', '.join(sorted(set(re.sub(r'[^A-Za-z0-9_]+', ' ', st
         else:
             body = str(self.story)
 
-        body= f'{body}\033[96m{highlighted}\033[00m'
+        body = f'{body}\033[96m{highlighted}\033[00m'
 
         print('\n'.join(['\n'.join(wrapper.wrap(line)) for line in body.splitlines()]),
               end='', flush=True)
@@ -483,9 +428,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    list_input_type = 'rawlist' if args.jupyter else 'list'
-
-    if not args.jupyter and not args.silent:
+    if not args.silent:
         from audio.tts import Dub
 
     if not os.path.exists('./saved_stories'):

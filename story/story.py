@@ -39,7 +39,7 @@ class Story:
         else:
             return "Error save not found."
 
-    def save(self, save_name: str):
+    def save(self, save_name: str, name_is_title=True):
         self.title = save_name
         file_name = str(save_name) + ".json"
         with open(os.path.join(self.save_path, file_name), "w") as fp:

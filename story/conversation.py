@@ -25,8 +25,9 @@ class Conversation(Story):
         else:
             return "Error save not found."
 
-    def save(self, save_name: str):
-        self.title = save_name
+    def save(self, save_name: str, name_is_title=True):
+        if name_is_title:
+            self.title = save_name
         file_name = str(save_name) + " (conversation).json"
         with open(os.path.join(self.save_path, file_name), "w") as fp:
             json.dump({'type': 'conversation', 'player':self.player, 'bot': self.bot, 'events': self.events}, fp)

@@ -149,14 +149,14 @@ class Dub:
                         self.synthesizer.save_wav(wav, in_memory_wav)
                         files.append(in_memory_wav)
 
-                    self.synthesizer.tts_model.to('cpu')
-
             if files:
                 file = self.postprocess(files, 1.1)
                 self.playsound(file)
 
         except KeyboardInterrupt:
             pass
+        finally:
+            self.synthesizer.tts_model.to('cpu')
 
     def postprocess(self, files, pitch=1.0):
         processedfile = io.BytesIO()

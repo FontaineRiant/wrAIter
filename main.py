@@ -168,12 +168,12 @@ class Game:
                 print(f'Failed to save the game as {user_input}')
 
     def loop_text(self):
-        self.story.save('__autosave__', name_is_title=False)
         self.pprint()
 
         self.default_input = ''
 
         while True:
+            self.story.save('__autosave__', name_is_title=False)
             self.pprint()
             inquirer_prompt = inquirer.text(message='', qmark='', amark='', raise_keyboard_interrupt=False,
                                             mandatory=False, default=self.default_input, multiline=True,
@@ -304,10 +304,10 @@ class Game:
                     self.pprint()
 
     def loop_voice(self):
-        self.story.save('__autosave__', name_is_title=False)
         self.pprint()
 
         while True:
+            self.story.save('__autosave__', name_is_title=False)
             self.pprint()
             try:
                 user_input = self.stt.custom_listen()
@@ -345,10 +345,10 @@ class Game:
                 self.pprint()
 
     def loop_choice(self):
-        self.story.save('__autosave__', name_is_title=False)
         self.pprint()
 
         while True:
+            self.story.save('__autosave__', name_is_title=False)
             if isinstance(self.story, Conversation):
                 self.loop = self.loop_text
                 return

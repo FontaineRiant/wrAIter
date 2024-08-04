@@ -102,22 +102,24 @@ class Story:
     def act(self, action: str = '', tries: int = 10, eos_tokens=[]):
         max_tries = tries
         input_str = self.clean_input(action)
-        result = self.gen.generate(input_str, stream=self.stream, eos_tokens=eos_tokens, length=self.gen_length)
-        result = self.clean_result(result)
-
-        while (len(result) < 2
-               or SequenceMatcher(None, self.events[-1], result).ratio() > 0.9 - 0.5 * (tries / max_tries)
-               or '[CENSORED]' in result):
-            # reject censored output, empty outputs and repeating outputs (tolerance to repeats increases from 0.4 to
-            # 0.9 progressively with each try)
-            if tries == 0:
-                return None
-            tries -= 1
+        self.events.append(action)
+        try:
             result = self.gen.generate(input_str, stream=self.stream, eos_tokens=eos_tokens, length=self.gen_length)
-            # print(result)
             result = self.clean_result(result)
 
-        self.events.append(action)
+            while (len(result) < 2
+                   or SequenceMatcher(None, self.events[-1], result).ratio() > 0.9 - 0.5 * (tries / max_tries)
+                   or '[CENSORED]' in result):
+                # reject censored output, empty outputs and repeating outputs (tolerance to repeats increases from 0.4 to
+                # 0.9 progressively with each try)
+                if tries == 0:
+                    return None
+                tries -= 1
+                result = self.gen.generate(input_str, stream=self.stream, eos_tokens=eos_tokens, length=self.gen_length)
+                # print(result)
+                result = self.clean_result(result)
+        except KeyboardInterrupt:
+            raise
         self.events.append(result)
         return result
 

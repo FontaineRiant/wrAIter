@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 
+from prompt_toolkit.filters import Condition
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from audio.stt import CustomMic
@@ -19,7 +21,6 @@ from textwrap import TextWrapper
 
 class Game:
     def __init__(self):
-        self.default_input = ''
         self.gen = Generator(model_name=args.model[0], gpu=not args.cputext, precision=args.precision)
         self.tts = None if args.silent else Dub(gpu=not args.cputts, lang=args.lang[0])
         self.stt = CustomMic(english=(args.lang[0] == 'en'), model='medium')
@@ -27,6 +28,7 @@ class Game:
         self.loop = self.loop_text
         self.sample_hashes = []
         self.keybind_pressed = None
+        self.redo_history = []
 
     def play(self):
         while True:
@@ -167,132 +169,141 @@ class Game:
 
     def loop_text(self):
         self.pprint()
-        self.default_input = ''
 
         while True:
-            self.story.save('__autosave__', name_is_title=False)
-            self.pprint()
-            inquirer_prompt = inquirer.text(message='', qmark='', amark='', raise_keyboard_interrupt=False,
-                                            mandatory=False, default=self.default_input, multiline=True,
-                                            long_instruction='Press Enter twice to send, Ctrl-L for a list of commands',
-                                            instruction=' ', keybindings={'answer': [{'key': ['enter', 'enter']}]})
-            self.default_input = ''
+            try:
+                self.pprint()
+                default_input = self.redo_history[0] if self.redo_history else ''
+                inquirer_prompt = inquirer.text(message='', qmark='', amark='', raise_keyboard_interrupt=False,
+                                                mandatory=False, default=default_input, multiline=True,
+                                                long_instruction='Press Enter twice to send, Ctrl-L for a list of commands',
+                                                instruction=' ', keybindings={'answer': [{'key': ['enter', 'enter']}]})
 
-            # Declare keybinds
-            @inquirer_prompt.register_kb('escape')
-            def menu(event):
-                self.keybind_pressed = menu
-                inquirer_prompt._handle_skip(event)
+                # Declare keybinds
+                @inquirer_prompt.register_kb('escape')
+                def menu(event):
+                    self.keybind_pressed = menu
+                    inquirer_prompt._handle_skip(event)
 
-            @inquirer_prompt.register_kb('c-w')
-            def wordstats(event):
-                tokens_current = len(self.story.gen.enc.encode(str(self.story)))
-                tokens_max = self.story.get_max_history()
-                tokens_trimmed = len(self.story.gen.enc.encode(self.story.clean_input()))
-                fancy_words = ", ".join(sorted(set(re.sub(
-                    r"[^A-Za-z0-9_]+", " ",
-                    str(self.story).lower()).split()), key=lambda x: len(x), reverse=True)[:5])
-                print(f'\n\nstory title:             "{self.story.title}"\n'
-                      f'context/starting prompt:\n'
-                      f'{self.story.events[0]}\n\n'
-                      f'number of events:        {len(self.story.events)}\n'
-                      f'number of tokens:        {tokens_current}/{tokens_max} (trimmed to {tokens_trimmed})\n'
-                      f'wordcloud:               {self.story.wordcloud()}\n'
-                      f'fanciest words:          {fancy_words}\n')
-                input('Press enter to continue.')
-                inquirer_prompt._handle_skip(event)
+                @inquirer_prompt.register_kb('c-w')
+                def wordstats(event):
+                    tokens_current = len(self.story.gen.enc.encode(str(self.story)))
+                    tokens_max = self.story.get_max_history()
+                    tokens_trimmed = len(self.story.gen.enc.encode(self.story.clean_input()))
+                    fancy_words = ", ".join(sorted(set(re.sub(
+                        r"[^A-Za-z0-9_]+", " ",
+                        str(self.story).lower()).split()), key=lambda x: len(x), reverse=True)[:5])
+                    print(f'\n\nstory title:             "{self.story.title}"\n'
+                          f'context/starting prompt:\n'
+                          f'{self.story.events[0]}\n\n'
+                          f'number of events:        {len(self.story.events)}\n'
+                          f'number of tokens:        {tokens_current}/{tokens_max} (trimmed to {tokens_trimmed})\n'
+                          f'wordcloud:               {self.story.wordcloud()}\n'
+                          f'fanciest words:          {fancy_words}\n')
+                    input('Press enter to continue.')
+                    inquirer_prompt._handle_skip(event)
 
-            @inquirer_prompt.register_kb('c-p')
-            def edit_story_prompt(event):
-                self.keybind_pressed = edit_story_prompt
-                inquirer_prompt._handle_skip(event)
+                @inquirer_prompt.register_kb('c-p')
+                def edit_story_prompt(event):
+                    self.keybind_pressed = edit_story_prompt
+                    inquirer_prompt._handle_skip(event)
 
-            @inquirer_prompt.register_kb('tab')
-            def tab(event):
-                self.keybind_pressed = tab
-                inquirer_prompt._handle_enter(event)
+                @inquirer_prompt.register_kb('tab')
+                def tab(event):
+                    self.keybind_pressed = tab
+                    inquirer_prompt._handle_enter(event)
 
 
-            @inquirer_prompt.register_kb('c-s')
-            def save(event):
-                self.keybind_pressed = save
-                inquirer_prompt._handle_skip(event)
+                @inquirer_prompt.register_kb('c-s')
+                def save(event):
+                    self.keybind_pressed = save
+                    inquirer_prompt._handle_skip(event)
 
-            @inquirer_prompt.register_kb('c-y')
-            def revert(event):
-                if self.tts is not None:
-                    self.tts.stop()
-                if len(self.story.events) <= 1:
-                    pass
-                elif isinstance(self.story, Conversation):
-                    self.story.events = self.story.events[:-2]
-                else:
-                    self.default_input = self.story.events[-1]
-                    self.story.events = self.story.events[:-1]
+                @inquirer_prompt.register_kb('up', filter=Condition(lambda: len(self.story.events) > 1))
+                def revert(event):
+                    if self.tts is not None:
+                        self.tts.stop()
+                    undo = 2 if isinstance(self.story, Conversation) else 1
+                    self.redo_history = self.story.events[-undo:] + self.redo_history
+                    self.story.events = self.story.events[:-undo]
+                    inquirer_prompt._handle_skip(event)
 
-                inquirer_prompt._handle_skip(event)
+                @inquirer_prompt.register_kb('down', filter=Condition(lambda: bool(self.redo_history)))
+                def redo(event):
+                    self.keybind_pressed = redo
+                    inquirer_prompt._handle_enter(event)
 
-            @inquirer_prompt.register_kb('c-l')
-            def command_list(event):
-                print('\n\nKnown commands:\n'
-                      'esc      go to main menu\n'
-                      'tab      generate a single sentence\n'
-                      'ctrl-l   display this list\n'
-                      'ctrl-y   undo and edit last action or response\n'
-                      'ctrl-p   edit context/starting prompt\n'
-                      'ctrl-s   save story\n'
-                      'ctrl-w   print word count and other stats\n'
-                      'ctrl-c   clear current text box, interrupt generation and audio\n')
-                input('Press enter to continue.')
-                inquirer_prompt._handle_skip(event)
+                @inquirer_prompt.register_kb('c-l')
+                def command_list(event):
+                    print('\n\nKnown commands:\n'
+                          'esc          go to main menu\n'
+                          'tab          generate a single sentence\n'
+                          'UP   arrow   undo and edit last action or response\n'
+                          'DOWN arrow   redo the last undone action\n'
+                          'ctrl-l       display this list\n'
+                          'ctrl-p       edit context/starting prompt\n'
+                          'ctrl-s       save story\n'
+                          'ctrl-w       print word count and other stats\n'
+                          'ctrl-c       clear current text box, interrupt generation and audio\n')
+                    input('Press enter to continue.')
+                    inquirer_prompt._handle_skip(event)
 
-            # execute inquirer prompt
-            self.keybind_pressed = None
-            user_input = inquirer_prompt.execute()
+                # execute inquirer prompt
+                self.keybind_pressed = None
+                user_input = inquirer_prompt.execute()
 
-            # Handle keybinds that require additional user inputs
-            if self.keybind_pressed == menu:
-                return
-            elif self.keybind_pressed == edit_story_prompt:
-                new_context = inquirer.text('Edit context/starting prompt:',
-                                            default=self.story.events[0],
-                                            qmark='', amark='', raise_keyboard_interrupt=False,
-                                            mandatory=False, multiline=True, instruction=' ',
-                                            long_instruction='Press Enter twice to send, Ctrl-C to cancel',
-                                            keybindings={'answer': [{'key': ['enter', 'enter']}]}).execute()
-                if new_context is not None:
-                    self.story.events[0] = new_context
+                # Handle keybinds that require additional processing
+                if self.keybind_pressed == menu:
+                    return
+                elif self.keybind_pressed == edit_story_prompt:
+                    new_context = inquirer.text('Edit context/starting prompt:',
+                                                default=self.story.events[0],
+                                                qmark='', amark='', raise_keyboard_interrupt=False,
+                                                mandatory=False, multiline=True, instruction=' ',
+                                                long_instruction='Press Enter twice to send, Ctrl-C to cancel',
+                                                keybindings={'answer': [{'key': ['enter', 'enter']}]}).execute()
+                    if new_context is not None:
+                        self.story.events[0] = new_context
 
-            elif self.keybind_pressed == save:
-                self.save_prompt()
-            elif user_input is None:
-                # CTRL+C case
-                if self.tts is not None:
-                    self.tts.stop()
+                elif self.keybind_pressed == save:
+                    self.save_prompt()
+                elif user_input is None:
+                    # CTRL+C case (inquirer returned None)
+                    if self.tts is not None:
+                        self.tts.stop()
+                elif self.keybind_pressed == redo:
+                    n = 2 if isinstance(self.story, Conversation) else 1
+                    self.story.events.append(user_input)
+                    if n > 1:
+                        self.story.events += self.redo_history[1:n]
+                    self.redo_history = self.redo_history[n:]
+                    user_input = None  # skip generation
 
-            # handle text input
-            if user_input is not None:
-                action = user_input.strip(' ')
+                # handle text input
+                if user_input is not None:
+                    self.story.save('__autosave__', name_is_title=False)
+                    self.redo_history = []
 
-                if len(self.story.events) <= 1:
-                    action = '\n' + action
-                elif action:
-                    action = ' ' + action
+                    action = user_input.strip(' ')
 
-                # capitalize
-                action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
-                action = re.sub(r'[.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
-                                lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
+                    if len(self.story.events) <= 1:
+                        action = '\n' + action
+                    elif action:
+                        action = ' ' + action
 
-                if isinstance(self.story, Conversation):
-                    if args.lang[0] == 'fr':
-                        action = f'\n[{self.story.player}:] {action.strip()}\n[{self.story.bot}:] '
-                    else:
-                        action = f'\n{self.story.player}: "{action.strip()}"\n{self.story.bot}: "'
+                    # capitalize
+                    action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
+                    action = re.sub(r'[.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
+                                    lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
 
-                self.pprint(action)
+                    if isinstance(self.story, Conversation):
+                        if args.lang[0] == 'fr':
+                            action = f'\n[{self.story.player}:] {action.strip()}\n[{self.story.bot}:] '
+                        else:
+                            action = f'\n{self.story.player}: "{action.strip()}"\n{self.story.bot}: "'
 
-                try:
+                    self.pprint(action)
+
                     eos_tokens = ['.', '!', '?', '\n'] if self.keybind_pressed == tab else []
                     result = self.story.act(action,eos_tokens=eos_tokens)
                     self.pprint()
@@ -305,41 +316,42 @@ class Game:
                                 self.tts.deep_play(result)
                             else:
                                 self.tts.deep_play(action + result)
-                except KeyboardInterrupt:
-                    self.pprint()
+            except KeyboardInterrupt:
+                if self.tts is not None:
+                    self.tts.stop()
 
     def loop_voice(self):
         self.pprint()
 
         while True:
-            self.story.save('__autosave__', name_is_title=False)
-            self.pprint()
             try:
-                user_input = self.stt.custom_listen()
-            except KeyboardInterrupt:
-                return
+                self.story.save('__autosave__', name_is_title=False)
+                self.pprint()
+                try:
+                    user_input = self.stt.custom_listen()
+                except KeyboardInterrupt:
+                    return
 
-            action = user_input.strip()
+                action = user_input.strip()
 
-            if len(self.story.events) <= 1:
-                action = '\n' + action
-            elif action:
-                action = ' ' + action
+                if len(self.story.events) <= 1:
+                    action = '\n' + action
+                elif action:
+                    action = ' ' + action
 
-            # capitalize
-            action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
-            action = re.sub(r'^([a-z])|[\.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
-                            lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
+                # capitalize
+                action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
+                action = re.sub(r'^([a-z])|[\.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
+                                lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
 
-            if isinstance(self.story, Conversation):
-                if args.lang[0] == 'fr':
-                    action = f'\n[{self.story.player}:] {action.strip()}\n[{self.story.bot}:] '
-                else:
-                    action = f'\n{self.story.player}: "{action.strip()}"\n{self.story.bot}: "'
+                if isinstance(self.story, Conversation):
+                    if args.lang[0] == 'fr':
+                        action = f'\n[{self.story.player}:] {action.strip()}\n[{self.story.bot}:] '
+                    else:
+                        action = f'\n{self.story.player}: "{action.strip()}"\n{self.story.bot}: "'
 
-            self.pprint(action)
+                self.pprint(action)
 
-            try:
                 result = self.story.act(action)
                 self.pprint()
                 if result is None:
@@ -347,51 +359,57 @@ class Game:
                 else:
                     self.tts.deep_play(result)
             except KeyboardInterrupt:
-                self.pprint()
+                if self.tts is not None:
+                    self.tts.stop()
 
     def loop_choice(self):
         self.pprint()
 
         while True:
-            self.story.save('__autosave__', name_is_title=False)
-            if isinstance(self.story, Conversation):
-                self.loop = self.loop_text
-                return
+            try:
+                self.story.save('__autosave__', name_is_title=False)
+                if isinstance(self.story, Conversation):
+                    self.loop = self.loop_text
+                    return
 
-            self.pprint()
-            results = self.story.gen_n_results(3)
-            results = {r.strip('\n').split('\n')[0]: r for r in results}
-            choices = list(results.keys()) + ['< revert >', '< more >']
+                self.pprint()
+                results = self.story.gen_n_results(3)
+                results = {r.strip('\n').split('\n')[0]: r for r in results}
+                choices = list(results.keys()) + ['< revert >', '< more >']
 
-            user_input = inquirer.select('\nChoice:', amark='', qmark='',
-                                         choices=choices,
-                                         raise_keyboard_interrupt=False, mandatory=False,
-                                         long_instruction='Ctrl-C for menu').execute()
-            if user_input is None:
-                return
-            elif user_input == '< more >':
-                continue
-            elif user_input == '< revert >':
-                if self.tts is not None:
-                    self.tts.stop()
-                if len(self.story.events) < 4:
-                    self.story.new(self.story.events[0])
+                user_input = inquirer.select('\nChoice:', amark='', qmark='',
+                                             choices=choices,
+                                             raise_keyboard_interrupt=False, mandatory=False,
+                                             long_instruction='Ctrl-C for menu').execute()
+                if user_input is None:
+                    return
+                elif user_input == '< more >':
+                    continue
+                elif user_input == '< revert >':
+                    if self.tts is not None:
+                        self.tts.stop()
+                    if len(self.story.events) < 4:
+                        self.story.new(self.story.events[0])
+                        self.pprint()
+                        if not args.silent:
+                            self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])))
+                    else:
+                        self.story.events = self.story.events[:-1]
+                        self.pprint()
+                else:
+                    user_input = results[user_input]
+                    self.story.events.append(user_input)
                     self.pprint()
                     if not args.silent:
-                        self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])))
-                else:
-                    self.story.events = self.story.events[:-1]
-                    self.pprint()
-            else:
-                user_input = results[user_input]
-                self.story.events.append(user_input)
-                self.pprint()
-                if not args.silent:
-                    self.tts.deep_play(user_input)
+                        self.tts.deep_play(user_input)
+            except KeyboardInterrupt:
+                if self.tts is not None:
+                    self.tts.stop()
 
     def pprint(self, highlighted=None):
         width = shutil.get_terminal_size(fallback=(82, 40)).columns
-        wrapper = TextWrapper(width=width, replace_whitespace=False)
+        width = min(width, 180)
+        wrapper = TextWrapper(width=width, replace_whitespace=False, initial_indent='  ', subsequent_indent='  ')
 
         os.system('cls' if os.name == 'nt' else 'clear')
 

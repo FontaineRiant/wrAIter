@@ -37,25 +37,29 @@ class Generator:
 
         model_inputs = self.enc([prompt], return_tensors='pt').to(self.device)
 
-
         if self.offload_to_memory:
             self.model.to(self.device)
 
         print('\033[96m', end='')
-        generated_ids = self.model.generate(
-            **model_inputs,
-            max_new_tokens=length,
-            do_sample=True,
-            use_cache=True,
-            pad_token_id=self.enc.eos_token_id,
-            streamer=self.streamer if stream else None,
-            repetition_penalty=1.05,
-            eos_token_id=eos_token_ids + [self.enc.eos_token_id]
-        )
-        print('\033[00m', end='')
+        try:
+            generated_ids = self.model.generate(
+                **model_inputs,
+                max_new_tokens=length,
+                do_sample=True,
+                use_cache=True,
+                pad_token_id=self.enc.eos_token_id,
+                streamer=self.streamer if stream else None,
+                repetition_penalty=1.05,
+                eos_token_id=eos_token_ids + [self.enc.eos_token_id]
+            )
+        except KeyboardInterrupt:
+            self.streamer.end()
+            raise
+        finally:
+            print('\033[00m', end='')
 
-        if self.offload_to_memory:
-            self.model.to('cpu')
+            if self.offload_to_memory:
+                self.model.to('cpu')
 
         return self.enc.batch_decode(generated_ids[:, model_inputs['input_ids'].shape[1]:],
                                      clean_up_tokenization_spaces=False)[0]

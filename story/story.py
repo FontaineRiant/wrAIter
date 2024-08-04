@@ -16,7 +16,7 @@ def story_hash(string: str):
 
 
 class Story:
-    def __init__(self, gen: Generator, censor: bool, gen_length=80):
+    def __init__(self, gen: Generator, censor: bool, gen_length=100):
         self.gen_length=gen_length
         self.stream = True
         self.censor = censor
@@ -127,7 +127,7 @@ class Story:
         input_str = self.clean_input()
 
         while len(res) < n and tries > 0:
-            result = self.gen.generate(input_str, stream=False, length=self.gen_length)
+            result = self.gen.generate(input_str, stream=False, length=self.gen_length, eos_tokens=['.', '!', '?', '\n'])
             result = self.clean_result(result)
 
             if not (len(result) < 2

@@ -167,7 +167,6 @@ class Game:
 
     def loop_text(self):
         self.pprint()
-
         self.default_input = ''
 
         while True:
@@ -208,6 +207,12 @@ class Game:
                 self.keybind_pressed = edit_story_prompt
                 inquirer_prompt._handle_skip(event)
 
+            @inquirer_prompt.register_kb('tab')
+            def tab(event):
+                self.keybind_pressed = tab
+                inquirer_prompt._handle_enter(event)
+
+
             @inquirer_prompt.register_kb('c-s')
             def save(event):
                 self.keybind_pressed = save
@@ -231,6 +236,7 @@ class Game:
             def command_list(event):
                 print('\n\nKnown commands:\n'
                       'esc      go to main menu\n'
+                      'tab      generate a single sentence\n'
                       'ctrl-l   display this list\n'
                       'ctrl-y   undo and edit last action or response\n'
                       'ctrl-p   edit context/starting prompt\n'
@@ -287,7 +293,8 @@ class Game:
                 self.pprint(action)
 
                 try:
-                    result = self.story.act(action)
+                    eos_tokens = ['.', '!', '?', '\n'] if self.keybind_pressed == tab else []
+                    result = self.story.act(action,eos_tokens=eos_tokens)
                     self.pprint()
                     if result is None:
                         print(

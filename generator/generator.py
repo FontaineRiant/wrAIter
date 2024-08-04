@@ -32,7 +32,7 @@ class Generator:
 
         self.streamer = TextStreamer(self.enc, skip_prompt=True)
 
-    def generate(self, prompt: str, stream=True, eos_tokens=[], length=80):
+    def generate(self, prompt: str, stream=True, eos_tokens=[], length=100):
         eos_token_ids = [self.enc.encode(term)[-1] for term in eos_tokens]
 
         model_inputs = self.enc([prompt], return_tensors='pt').to(self.device)

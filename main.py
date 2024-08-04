@@ -213,7 +213,7 @@ class Game:
                 self.keybind_pressed = save
                 inquirer_prompt._handle_skip(event)
 
-            @inquirer_prompt.register_kb('c-z')
+            @inquirer_prompt.register_kb('c-y')
             def revert(event):
                 if self.tts is not None:
                     self.tts.stop()
@@ -232,7 +232,7 @@ class Game:
                 print('\n\nKnown commands:\n'
                       'esc      go to main menu\n'
                       'ctrl-l   display this list\n'
-                      'ctrl-z or ctrl-y  undo and edit last action or response\n'
+                      'ctrl-y   undo and edit last action or response\n'
                       'ctrl-p   edit context/starting prompt\n'
                       'ctrl-s   save story\n'
                       'ctrl-w   print word count and other stats\n'

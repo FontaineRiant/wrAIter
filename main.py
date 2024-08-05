@@ -77,8 +77,8 @@ class Game:
                 choices.insert(1, 'save')
 
             action = inquirer.select('Choose an option',
-                                        choices=choices,
-                                        raise_keyboard_interrupt=False).execute()
+                                     choices=choices,
+                                     raise_keyboard_interrupt=False).execute()
 
             if action == 'new story':
                 self.new_prompt()
@@ -88,7 +88,7 @@ class Game:
                 if len(self.story.events) == 0:
                     if most_recent_story.endswith(' (conversation)'):
                         self.story = Conversation(self.gen, censor=args.censor)
-                    else :
+                    else:
                         self.story = Story(self.gen, censor=args.censor)
                     self.story.load(most_recent_story)
             elif action == 'save':
@@ -199,16 +199,28 @@ class Game:
                     tokens_current = len(self.story.gen.enc.encode(str(self.story)))
                     tokens_max = self.story.get_max_history()
                     tokens_trimmed = len(self.story.gen.enc.encode(self.story.clean_input()))
+                    story_trimmed = self.story.clean_input()[len(self.story.events[0]):][:160].lstrip('\n')
                     fancy_words = ", ".join(sorted(set(re.sub(
                         r"[^A-Za-z0-9_]+", " ",
                         str(self.story).lower()).split()), key=lambda x: len(x), reverse=True)[:5])
-                    print(f'\n\nstory title:             "{self.story.title}"\n'
-                          f'context/starting prompt:\n'
-                          f'{self.story.events[0]}\n\n'
-                          f'number of events:        {len(self.story.events)}\n'
-                          f'number of tokens:        {tokens_current}/{tokens_max} (trimmed to {tokens_trimmed})\n'
-                          f'wordcloud:               {self.story.wordcloud()}\n'
-                          f'fanciest words:          {fancy_words}\n')
+
+                    width = shutil.get_terminal_size(fallback=(82, 40)).columns
+                    width = min(width, 180)
+                    wrapper = TextWrapper(width=width, replace_whitespace=False, initial_indent='',
+                                          subsequent_indent=' '*18)
+
+                    body = (f'\n\n'
+                            f'story title:      "{self.story.title}"\n'
+                            f'wordcloud:        {self.story.wordcloud()}\n'
+                            f'fanciest words:   {fancy_words}\n'
+                            f'number of events: {len(self.story.events)}\n'
+                            f'number of tokens: {tokens_current}/{tokens_max} (trimmed to {tokens_trimmed})\n'
+                            f'context/starting prompt:\n'
+                            f'                  {self.story.events[0]}\n'
+                            f'oldest non-context that fits the input:\n'
+                            f'                  {story_trimmed} [...]\n')
+                    print('\n'.join(['\n'.join(wrapper.wrap(line)) for line in body.splitlines()]), flush=True)
+
                     input('Press enter to continue.')
                     inquirer_prompt._handle_skip(event)
 
@@ -221,7 +233,6 @@ class Game:
                 def tab(event):
                     self.keybind_pressed = tab
                     inquirer_prompt._handle_enter(event)
-
 
                 @inquirer_prompt.register_kb('c-s')
                 def save(event):
@@ -314,7 +325,7 @@ class Game:
                     self.pprint(action)
 
                     eos_tokens = ['.', '!', '?', '\n'] if self.keybind_pressed == tab else []
-                    result = self.story.act(action,eos_tokens=eos_tokens)
+                    result = self.story.act(action, eos_tokens=eos_tokens)
                     self.pprint()
                     if result is None:
                         print(

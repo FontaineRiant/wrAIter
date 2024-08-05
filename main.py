@@ -42,10 +42,25 @@ class Game:
             print("▀" * width)
 
             choices = []
-            if (len([f for f in os.listdir(SAVE_PATH) if
-                     f.endswith('.json') and not f.startswith('__autosave__')]) > 0 or len(self.story.events) > 0):
-                choices.append('continue')
-            if len([f for f in os.listdir(SAVE_PATH) if f.endswith('.json')]) > 0:
+
+            most_recent_story = None
+            for path, subdirs, files in os.walk(SAVE_PATH):
+                for name in reversed(
+                        sorted(files, key=lambda name: os.path.getmtime(os.path.join(path, name)))):
+                    if name.startswith('__autosave__'):
+                        continue
+                    if name.endswith('.json'):
+                        most_recent_story = name[:-5]
+                        break
+
+            continue_choice = 'continue'
+            if self.story.events:
+                choices.append(continue_choice)
+            elif most_recent_story is not None:
+                continue_choice = f'continue "{most_recent_story}"'
+                choices.append(continue_choice)
+
+            if [f for f in os.listdir(SAVE_PATH) if f.endswith('.json')]:
                 choices.append('load')
 
             choices.append('new story')
@@ -69,21 +84,13 @@ class Game:
                 self.new_prompt()
             if action == 'new conversation':
                 self.new_prompt(conv=True)
-            elif action == 'continue':
+            elif action == continue_choice:
                 if len(self.story.events) == 0:
-                    for path, subdirs, files in os.walk(SAVE_PATH):
-                        for name in reversed(
-                                sorted(files, key=lambda name: os.path.getmtime(os.path.join(path, name)))):
-                            if name.startswith('__autosave__'):
-                                continue
-                            if name.endswith(' (conversation).json'):
-                                self.story = Conversation(self.gen, censor=args.censor)
-                                self.story.load(name[:-5])
-                                break
-                            elif name.endswith('.json'):
-                                self.story = Story(self.gen, censor=args.censor)
-                                self.story.load(name[:-5])
-                                break
+                    if most_recent_story.endswith(' (conversation)'):
+                        self.story = Conversation(self.gen, censor=args.censor)
+                    else :
+                        self.story = Story(self.gen, censor=args.censor)
+                    self.story.load(most_recent_story)
             elif action == 'save':
                 self.save_prompt()
             elif action == 'load':

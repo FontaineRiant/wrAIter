@@ -42,8 +42,8 @@ class Game:
             print("▀" * width)
 
             choices = []
-            if (len([f for f in os.listdir(SAVE_PATH) if f.endswith('.json')]) > 0
-                    or len(self.story.events) > 0):
+            if (len([f for f in os.listdir(SAVE_PATH) if
+                     f.endswith('.json') and not f.startswith('__autosave__')]) > 0 or len(self.story.events) > 0):
                 choices.append('continue')
             if len([f for f in os.listdir(SAVE_PATH) if f.endswith('.json')]) > 0:
                 choices.append('load')
@@ -74,6 +74,8 @@ class Game:
                     for path, subdirs, files in os.walk(SAVE_PATH):
                         for name in reversed(
                                 sorted(files, key=lambda name: os.path.getmtime(os.path.join(path, name)))):
+                            if name.startswith('__autosave__'):
+                                continue
                             if name.endswith(' (conversation).json'):
                                 self.story = Conversation(self.gen, censor=args.censor)
                                 self.story.load(name[:-5])

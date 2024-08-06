@@ -16,7 +16,6 @@ venv
 __pycache__
 .idea
 saved_stories/*
-
-story/grammars/_*.json
+_saved_stories/*
 
 custom_play.sh

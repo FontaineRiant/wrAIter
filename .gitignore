@@ -1,9 +1,3 @@
-models/*
-!models/models_go_here.md
-
-samples/*
-!samples/.gitkeep
-
 postprocess/*
 #!postprocess/postprocess.py
 
@@ -15,7 +9,7 @@ fine-tuning
 venv
 __pycache__
 .idea
-saved_stories/*
-_saved_stories/*
+saved_stories
+_saved_stories
 
 custom_play.sh

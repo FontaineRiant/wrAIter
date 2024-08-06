@@ -202,7 +202,7 @@ class Game:
                     story_trimmed = self.story.clean_input()[len(self.story.events[0]):][:160].lstrip('\n')
                     fancy_words = ", ".join(sorted(set(re.sub(
                         r"[^A-Za-z0-9_]+", " ",
-                        str(self.story).lower()).split()), key=lambda x: len(x), reverse=True)[:5])
+                        str(self.story).lower()).split()), key=lambda x: len(x), reverse=True)[:10])
 
                     width = shutil.get_terminal_size(fallback=(82, 40)).columns
                     width = min(width, 180)
@@ -211,7 +211,7 @@ class Game:
 
                     body = (f'\n\n'
                             f'story title:      "{self.story.title}"\n'
-                            f'wordcloud:        {self.story.wordcloud()}\n'
+                            f'wordcloud:        {self.story.wordcloud(top_n=20)}\n'
                             f'fanciest words:   {fancy_words}\n'
                             f'number of events: {len(self.story.events)}\n'
                             f'number of tokens: {tokens_current}/{tokens_max} (trimmed to {tokens_trimmed})\n'

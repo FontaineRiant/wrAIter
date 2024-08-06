@@ -4,6 +4,7 @@ models/*
 samples/*
 !samples/.gitkeep
 
+plugins
 !plugins/postprocess.py
 
 *.wav

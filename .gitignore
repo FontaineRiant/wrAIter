@@ -4,7 +4,7 @@ models/*
 samples/*
 !samples/.gitkeep
 
-illustrator
+!plugins/postprocess.py
 
 *.wav
 

@@ -3,6 +3,8 @@ import os
 
 from prompt_toolkit.filters import Condition
 
+from postprocess import postprocess
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from audio.stt import CustomMic
@@ -326,6 +328,7 @@ class Game:
 
                     eos_tokens = ['.', '!', '?', '\n'] if self.keybind_pressed == tab else []
                     result = self.story.act(action, eos_tokens=eos_tokens)
+                    result = postprocess.post_txt2txt(result, self.story)
                     self.pprint()
                     if result is None:
                         print(
@@ -336,6 +339,8 @@ class Game:
                                 self.tts.deep_play(result)
                             else:
                                 self.tts.deep_play(action + result)
+
+                        postprocess.post_tts(self.story)
             except KeyboardInterrupt:
                 if self.tts is not None:
                     self.tts.stop()

@@ -154,7 +154,7 @@ class Dub:
                 self.playsound(file)
 
         except KeyboardInterrupt:
-            raise
+            self.stop()
         finally:
             self.synthesizer.tts_model.to('cpu')
 

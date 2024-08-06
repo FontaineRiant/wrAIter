@@ -5,7 +5,7 @@ samples/*
 !samples/.gitkeep
 
 postprocess/*
-!postprocess/postprocess.py
+#!postprocess/postprocess.py
 
 *.wav
 

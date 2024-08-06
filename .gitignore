@@ -4,8 +4,8 @@ models/*
 samples/*
 !samples/.gitkeep
 
-plugins/*
-!plugins/postprocess.py
+postprocess/*
+!postprocess/postprocess.py
 
 *.wav
 

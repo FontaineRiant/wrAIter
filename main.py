@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import os
 
+from InquirerPy.separator import Separator
 from prompt_toolkit.filters import Condition
 
 from postprocess import postprocess
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+from audio.tts import Dub
 from audio.stt import CustomMic
 from InquirerPy import prompt
 from InquirerPy import inquirer
@@ -67,6 +69,9 @@ class Game:
 
             choices.append('new story')
             choices.append('new conversation')
+            choices.append(Separator(f'{" settings " :=^22}'))
+
+            choices.append('unmute audio' if self.tts is None else 'mute audio')
 
             if self.loop != self.loop_text:
                 choices += ['switch to text input']
@@ -75,10 +80,11 @@ class Game:
             if self.loop != self.loop_voice:
                 choices += ['switch to voice input']
 
+
             if len(self.story.events) > 1:
                 choices.insert(1, 'save')
 
-            action = inquirer.select('Choose an option',
+            action = inquirer.select(f'{" data " :=^22}',
                                      choices=choices,
                                      raise_keyboard_interrupt=False).execute()
 
@@ -103,6 +109,12 @@ class Game:
                 self.loop = self.loop_text
             elif action == 'switch to voice input':
                 self.loop = self.loop_voice
+            elif action in ('mute audio', 'unmute audio'):
+                if self.tts is None:
+                    self.tts = Dub(gpu=not args.cputts, lang=args.lang[0])
+                else:
+                    self.tts.stop()
+                    self.tts = None
             else:
                 print('invalid input')
 
@@ -266,7 +278,7 @@ class Game:
                           'ctrl-p       edit context/starting prompt\n'
                           'ctrl-s       save story\n'
                           'ctrl-w       print word count and other stats\n'
-                          'ctrl-c       clear current text box, interrupt generation and audio\n')
+                          'ctrl-c       reset current text box, interrupt generation and audio\n')
                     input('Press enter to continue.')
                     inquirer_prompt._handle_skip(event)
 
@@ -334,7 +346,7 @@ class Game:
                         print(
                             "--- The model failed to produce an decent output after multiple tries. Try something else.")
                     else:
-                        if not args.silent:
+                        if self.tts is not None:
                             if isinstance(self.story, Conversation):
                                 self.tts.deep_play(result)
                             else:
@@ -416,7 +428,7 @@ class Game:
                     if len(self.story.events) < 4:
                         self.story.new(self.story.events[0])
                         self.pprint()
-                        if not args.silent:
+                        if self.tts is not None:
                             self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])))
                     else:
                         self.story.events = self.story.events[:-1]
@@ -425,7 +437,7 @@ class Game:
                     user_input = results[user_input]
                     self.story.events.append(user_input)
                     self.pprint()
-                    if not args.silent:
+                    if self.tts is not None:
                         self.tts.deep_play(user_input)
             except KeyboardInterrupt:
                 if self.tts is not None:
@@ -480,9 +492,6 @@ if __name__ == "__main__":
                         help='generative models language (en, fr, de, it, es, ...)')
 
     args = parser.parse_args()
-
-    if not args.silent:
-        from audio.tts import Dub
 
     if not os.path.exists('./saved_stories'):
         os.mkdir('./saved_stories')

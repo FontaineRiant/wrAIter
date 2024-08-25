@@ -17,7 +17,7 @@ def story_hash(string: str):
 
 class Story:
     def __init__(self, gen: Generator, censor: bool):
-        self.gen_length=80
+        self.gen_length = 80
         self.stream = True
         self.censor = censor
         self.gen = gen
@@ -52,14 +52,14 @@ class Story:
         return str(self)
 
     def get_max_history(self):
-        return min(self.gen.model.config.max_position_embeddings - self.gen_length, 6000)
+        return min(self.gen.model.n_ctx() - self.gen_length, 10000)
 
     def clean_input(self, action=''):
         # find the biggest memory that fits max_tokens
         mem_ind = 1
-        while len(
-                self.gen.enc.encode(self.events[0] + ''.join(filter(None, self.events[-mem_ind:]))
-                                    + action)) < self.get_max_history() and len(self.events) - 1 >= mem_ind:
+        while (len(self.gen.model.tokenize((
+                self.events[0] + ''.join(filter(None, self.events[-mem_ind:])) + action).encode("utf-8"))) < self.get_max_history()
+               and len(self.events) - 1 >= mem_ind):
             mem_ind += 1
         mem_ind -= 1
 
@@ -73,8 +73,9 @@ class Story:
         return text
 
     def clean_result(self, result):
-        result = re.sub(rf'{self.gen.enc.eos_token}[\s\S]*$', '', result)  # parse endoftext token that end the text
-        result = re.sub(rf'^({self.gen.enc.eos_token})+', '', result) # remove leading endoftext tokens
+        eos = self.gen.model._model.token_get_text(self.gen.model.token_eos())
+        result = re.sub(rf'{eos}[\s\S]*$', '', result)  # parse endoftext token that end the text
+        result = re.sub(rf'^({eos})+', '', result)  # remove leading endoftext tokens
 
         result = result.replace("’", "'")
         result = result.replace("`", "'")
@@ -129,7 +130,8 @@ class Story:
         input_str = self.clean_input()
 
         while len(res) < n and tries > 0:
-            result = self.gen.generate(input_str, stream=False, length=self.gen_length, eos_tokens=['.', '!', '?', '\n'])
+            result = self.gen.generate(input_str, stream=False, length=self.gen_length,
+                                       eos_tokens=['.', '!', '?', '\n'])
             result = self.clean_result(result)
 
             if not (len(result) < 2
@@ -143,16 +145,16 @@ class Story:
         return res
 
     def wordcloud(self, top_n=10, include_count=True):
-        ignorelist = ['you', 'are','she',  'has', 'have', 'don', 'does', 'her', 'can', 'for', 'out', 'not', 'all',
-                      'get', 'his','your', 'this', 'that', 'but', 'then', 'with', 'the', 'and', 'they', 'them', 'into',
+        ignorelist = ['you', 'are', 'she', 'has', 'have', 'don', 'does', 'her', 'can', 'for', 'out', 'not', 'all',
+                      'get', 'his', 'your', 'this', 'that', 'but', 'then', 'with', 'the', 'and', 'they', 'them', 'into',
                       'from', 'was', 'had', 'would', 'could', 'him', 'when', 'where', 'going', 'couldn', 'wouldn',
                       'its', 'their', 'were']
         words = [w for w
-                 in re.sub(r'\W+',' ',  str(self).lower()).split()
+                 in re.sub(r'\W+', ' ', str(self).lower()).split()
                  if w not in ignorelist and len(w) > 2]
         wordcloud = Counter(words).most_common(top_n)
         if include_count:
-            return ', '.join([f'{w} ({n})'for w, n in wordcloud])
+            return ', '.join([f'{w} ({n})' for w, n in wordcloud])
         else:
             return ', '.join([w for w, _ in wordcloud])
 

@@ -15,7 +15,7 @@ from InquirerPy import inquirer
 from story.story import Story
 from story.story import SAVE_PATH as SAVE_PATH
 from story.conversation import Conversation
-from generator.generator import Generator
+from generator.generator_llama import Generator
 import argparse
 import re
 import readline  # actually necessary for pyinquirer to work consistently
@@ -25,7 +25,7 @@ from textwrap import TextWrapper
 
 class Game:
     def __init__(self):
-        self.gen = Generator(model_name=args.model[0], gpu=not args.cputext, precision=args.precision)
+        self.gen = Generator(model_name=args.model[0], gpu=not args.cputext)
         self.tts = None if args.silent else Dub(gpu=not args.cputts, lang=args.lang[0])
         self.stt = None
         self.story = Story(self.gen, censor=args.censor)

@@ -27,7 +27,7 @@ class Game:
     def __init__(self):
         self.gen = Generator(model_name=args.model[0], gpu=not args.cputext, precision=args.precision)
         self.tts = None if args.silent else Dub(gpu=not args.cputts, lang=args.lang[0])
-        self.stt = CustomMic(english=(args.lang[0] == 'en'), model='medium')
+        self.stt = None
         self.story = Story(self.gen, censor=args.censor)
         self.loop = self.loop_text
         self.sample_hashes = []
@@ -104,10 +104,13 @@ class Game:
             elif action == 'load':
                 self.load_prompt()
             elif action == 'switch to choice mode':
+                self.stt = None
                 self.loop = self.loop_choice
             elif action == 'switch to text input':
+                self.stt = None
                 self.loop = self.loop_text
             elif action == 'switch to voice input':
+                self.stt = CustomMic(english=(args.lang[0] == 'en'), model='medium')
                 self.loop = self.loop_voice
             elif action in ('mute audio', 'unmute audio'):
                 if self.tts is None:

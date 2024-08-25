@@ -16,8 +16,8 @@ def story_hash(string: str):
 
 
 class Story:
-    def __init__(self, gen: Generator, censor: bool, gen_length=100):
-        self.gen_length=gen_length
+    def __init__(self, gen: Generator, censor: bool):
+        self.gen_length=80
         self.stream = True
         self.censor = censor
         self.gen = gen

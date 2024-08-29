@@ -25,6 +25,7 @@ from textwrap import TextWrapper
 
 class Game:
     def __init__(self):
+        self.status_text = 'Press Enter twice to send, Ctrl-L for a list of commands'
         self.gen = Generator(model_name=args.model[0], gpu=not args.cputext, precision=args.precision)
         self.tts = None if args.silent else Dub(gpu=not args.cputts, lang=args.lang[0])
         self.stt = None
@@ -79,7 +80,6 @@ class Game:
                 choices += ['switch to choice mode']
             if self.loop != self.loop_voice:
                 choices += ['switch to voice input']
-
 
             if len(self.story.events) > 1:
                 choices.insert(1, 'save')
@@ -189,9 +189,9 @@ class Game:
             user_input = user_input.strip()
             try:
                 self.story.save(user_input)
-                print(f'Successfully saved {user_input}')
+                self.status_text = f'Successfully saved {user_input}'
             except:
-                print(f'Failed to save the game as {user_input}')
+                self.status_text = f'Failed to save as {user_input}'
 
     def loop_text(self):
         self.pprint()
@@ -200,10 +200,13 @@ class Game:
             try:
                 self.pprint()
                 default_input = self.redo_history[0] if self.redo_history else ''
+                if self.redo_history:
+                    self.status_text = f'[{len(self.story.events)}/{len(self.redo_history) + len(self.story.events) - 1}]'
                 inquirer_prompt = inquirer.text(message='', qmark='', amark='', raise_keyboard_interrupt=False,
                                                 mandatory=False, default=default_input, multiline=True,
-                                                long_instruction='Press Enter twice to send, Ctrl-L for a list of commands',
+                                                long_instruction=self.status_text,
                                                 instruction=' ', keybindings={'answer': [{'key': ['enter', 'enter']}]})
+                self.status_text = 'Enter twice to send, Ctrl-L for commands'
 
                 # Declare keybinds
                 @inquirer_prompt.register_kb('escape')
@@ -224,7 +227,7 @@ class Game:
                     width = shutil.get_terminal_size(fallback=(82, 40)).columns
                     width = min(width, 180)
                     wrapper = TextWrapper(width=width, replace_whitespace=False, initial_indent='',
-                                          subsequent_indent=' '*18)
+                                          subsequent_indent=' ' * 18)
 
                     body = (f'\n\n'
                             f'story title:      "{self.story.title}"\n'

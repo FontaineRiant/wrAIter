@@ -326,10 +326,7 @@ class Game:
 
                     action = user_input.strip(' ')
 
-                    if len(self.story.events) <= 1:
-                        action = '\n' + action
-                    elif action:
-                        action = ' ' + action
+                    action = ' ' + action
 
                     # capitalize
                     action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
@@ -376,11 +373,7 @@ class Game:
                     return
 
                 action = user_input.strip()
-
-                if len(self.story.events) <= 1:
-                    action = '\n' + action
-                elif action:
-                    action = ' ' + action
+                action = ' ' + action
 
                 # capitalize
                 action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
@@ -401,7 +394,7 @@ class Game:
                     print("--- The model failed to produce an decent output after multiple tries. Try something else.")
                 else:
                     self.tts.deep_play(result)
-            except KeyboardInterrupt:
+            except KeyboardInterrupt as e:
                 if self.tts is not None:
                     self.tts.stop()
 

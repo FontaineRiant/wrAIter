@@ -48,7 +48,7 @@ class Story:
 
     def new(self, context: str = ''):
         self.title = ''
-        self.events = [context]
+        self.events = [context + '\n']
         return str(self)
 
     def get_max_history(self):
@@ -64,9 +64,14 @@ class Story:
         mem_ind -= 1
 
         events_clipped = self.events[0]
+        strip_one = True
         while mem_ind > 0:
             if len(self.events) - 1 >= mem_ind and self.events[-mem_ind]:
-                events_clipped += self.events[-mem_ind]
+                if strip_one:
+                    events_clipped += self.events[-mem_ind].lstrip(' ')
+                    strip_one = False
+                else:
+                    events_clipped += self.events[-mem_ind]
             mem_ind -= 1
 
         text = events_clipped + action
@@ -146,7 +151,7 @@ class Story:
         ignorelist = ['you', 'are','she',  'has', 'have', 'don', 'does', 'her', 'can', 'for', 'out', 'not', 'all',
                       'get', 'his','your', 'this', 'that', 'but', 'then', 'with', 'the', 'and', 'they', 'them', 'into',
                       'from', 'was', 'had', 'would', 'could', 'him', 'when', 'where', 'going', 'couldn', 'wouldn',
-                      'its', 'their', 'were']
+                      'its', 'their', 'were', 'didn', 'our', 'wasn', 'there', 'which', 'what', 'how', 'who']
         words = [w for w
                  in re.sub(r'\W+',' ',  str(self).lower()).split()
                  if w not in ignorelist and len(w) > 2]

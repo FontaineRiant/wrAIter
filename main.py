@@ -326,7 +326,8 @@ class Game:
 
                     action = user_input.strip(' ')
 
-                    action = ' ' + action
+                    if action:
+                        action = ' ' + action
 
                     # capitalize
                     action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
@@ -373,7 +374,8 @@ class Game:
                     return
 
                 action = user_input.strip()
-                action = ' ' + action
+                if action:
+                    action = ' ' + action
 
                 # capitalize
                 action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'

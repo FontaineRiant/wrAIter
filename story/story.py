@@ -5,6 +5,7 @@ from difflib import SequenceMatcher
 import hashlib
 from collections import Counter
 from generator.generator import Generator
+import csv
 
 SAVE_PATH = "./saved_stories/"
 if not os.path.exists(SAVE_PATH):
@@ -17,7 +18,7 @@ def story_hash(string: str):
 
 class Story:
     def __init__(self, gen: Generator, censor: bool):
-        self.gen_length=80
+        self.gen_length = 80
         self.stream = True
         self.censor = censor
         self.gen = gen
@@ -79,7 +80,7 @@ class Story:
 
     def clean_result(self, result):
         result = re.sub(rf'{self.gen.enc.eos_token}[\s\S]*$', '', result)  # parse endoftext token that end the text
-        result = re.sub(rf'^({self.gen.enc.eos_token})+', '', result) # remove leading endoftext tokens
+        result = re.sub(rf'^({self.gen.enc.eos_token})+', '', result)  # remove leading endoftext tokens
 
         result = result.replace("’", "'")
         result = result.replace("`", "'")
@@ -134,7 +135,8 @@ class Story:
         input_str = self.clean_input()
 
         while len(res) < n and tries > 0:
-            result = self.gen.generate(input_str, stream=False, length=self.gen_length, eos_tokens=['.', '!', '?', '\n'])
+            result = self.gen.generate(input_str, stream=False, length=self.gen_length,
+                                       eos_tokens=['.', '!', '?', '\n'])
             result = self.clean_result(result)
 
             if not (len(result) < 2
@@ -147,17 +149,23 @@ class Story:
 
         return res
 
-    def wordcloud(self, top_n=10, include_count=True):
-        ignorelist = ['you', 'are','she',  'has', 'have', 'don', 'does', 'her', 'can', 'for', 'out', 'not', 'all',
-                      'get', 'his','your', 'this', 'that', 'but', 'then', 'with', 'the', 'and', 'they', 'them', 'into',
-                      'from', 'was', 'had', 'would', 'could', 'him', 'when', 'where', 'going', 'couldn', 'wouldn',
-                      'its', 'their', 'were', 'didn', 'our', 'wasn', 'there', 'which', 'what', 'how', 'who']
+    def wordcloud(self, top_n=10, include_count=False):
         words = [w for w
-                 in re.sub(r'\W+',' ',  str(self).lower()).split()
-                 if w not in ignorelist and len(w) > 2]
-        wordcloud = Counter(words).most_common(top_n)
+                 in re.sub(r"[\W\d]+", ' ', str(self).lower().replace("n't", '')).split()
+                 if len(w) > 1]
+        wordcloud = {w: count for w, count in Counter(words).most_common() if count > 1}
+
+        # adjust weight relatively to usual frequency of words
+        with open('story/unigram_freq_by_Rachael_Tatman_on_kaggle.csv') as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=',')
+            for row in reader:
+                if row['word'] in wordcloud:
+                    wordcloud[row['word']] /= int(row['count']) + 1
+
+        wordcloud = sorted(wordcloud.items(), key=lambda x: x[1], reverse=True)[:top_n]
+
         if include_count:
-            return ', '.join([f'{w} ({n})'for w, n in wordcloud])
+            return ', '.join([f'{w} ({n})' for w, n in wordcloud])
         else:
             return ', '.join([w for w, _ in wordcloud])
 

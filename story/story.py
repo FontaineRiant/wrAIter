@@ -124,8 +124,8 @@ class Story:
                 result = self.gen.generate(input_str, stream=self.stream, eos_tokens=eos_tokens, length=self.gen_length)
                 # print(result)
                 result = self.clean_result(result)
-        except KeyboardInterrupt:
-            raise
+        except KeyboardInterrupt as e:
+            raise e
         self.events.append(result)
         return result
 

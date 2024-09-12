@@ -52,9 +52,9 @@ class Generator:
                 repetition_penalty=1.05,
                 eos_token_id=eos_token_ids + [self.enc.eos_token_id]
             )
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as e:
             self.streamer.end()
-            raise
+            raise e
         finally:
             print('\033[00m', end='')
 

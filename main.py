@@ -4,6 +4,7 @@ import os
 from InquirerPy.separator import Separator
 from prompt_toolkit.filters import Condition
 
+import settings
 from postprocess import postprocess
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -25,11 +26,12 @@ from textwrap import TextWrapper
 
 class Game:
     def __init__(self):
+        self.settings = settings.Settings()
         self.status_text = 'Press Enter twice to send, Ctrl-L for a list of commands'
-        self.gen = Generator(model_name=args.model[0], gpu=not args.cputext, precision=args.precision)
-        self.tts = None if args.silent else Dub(gpu=not args.cputts, lang=args.lang[0])
+        self.gen = Generator(model_name=self.settings.get('model'), gpu=not self.settings.get('cputext'), precision=self.settings.get('precision'))
+        self.tts = None if self.settings.get('silent') else Dub(gpu=not self.settings.get('cputts'), lang=self.settings.get('language'))
         self.stt = None
-        self.story = Story(self.gen, censor=args.censor)
+        self.story = Story(self.gen, censor=self.settings.get('censor'))
         self.loop = self.loop_text
         self.sample_hashes = []
         self.keybind_pressed = None
@@ -74,12 +76,15 @@ class Game:
 
             choices.append('unmute audio' if self.tts is None else 'mute audio')
 
+            choices.append('allow profanity' if self.settings.get('censor') else 'censor profanity')
+
             if self.loop != self.loop_text:
                 choices += ['switch to text input']
             if self.loop != self.loop_choice and not isinstance(self.story, Conversation):
-                choices += ['switch to choice mode']
+                choices += ['switch to choice input']
             if self.loop != self.loop_voice:
                 choices += ['switch to voice input']
+
 
             if len(self.story.events) > 1:
                 choices.insert(1, 'save')
@@ -95,29 +100,37 @@ class Game:
             elif action == continue_choice:
                 if len(self.story.events) == 0:
                     if most_recent_story.endswith(' (conversation)'):
-                        self.story = Conversation(self.gen, censor=args.censor)
+                        self.story = Conversation(self.gen, censor=self.settings.get('censor'))
                     else:
-                        self.story = Story(self.gen, censor=args.censor)
+                        self.story = Story(self.gen, censor=self.settings.get('censor'))
                     self.story.load(most_recent_story)
             elif action == 'save':
                 self.save_prompt()
             elif action == 'load':
                 self.load_prompt()
-            elif action == 'switch to choice mode':
+            elif action == 'switch to choice input':
                 self.stt = None
                 self.loop = self.loop_choice
             elif action == 'switch to text input':
                 self.stt = None
                 self.loop = self.loop_text
             elif action == 'switch to voice input':
-                self.stt = CustomMic(english=(args.lang[0] == 'en'), model='medium')
+                self.stt = CustomMic(english=(self.settings.get('language') == 'en'), model='medium')
                 self.loop = self.loop_voice
             elif action in ('mute audio', 'unmute audio'):
                 if self.tts is None:
-                    self.tts = Dub(gpu=not args.cputts, lang=args.lang[0])
+                    self.tts = Dub(gpu=not self.settings.get('cputts'), lang=self.settings.get('language'))
+                    self.settings.set('silent', False)
                 else:
                     self.tts.stop()
                     self.tts = None
+                    self.settings.set('silent', True)
+            elif action == 'censor profanity':
+                self.story.censor = True
+                self.settings.set('censor', True)
+            elif action == 'allow profanity':
+                self.story.censor = False
+                self.settings.set('censor', False)
             else:
                 print('invalid input')
 
@@ -139,7 +152,7 @@ class Game:
             if context is None:
                 return
 
-            self.story = Story(self.gen, censor=args.censor)
+            self.story = Story(self.gen, censor=self.settings.get('censor'))
             self.story.new(context)
         else:
             player = inquirer.text("Enter your tag. It can be 'You', 'A', 'B', 'C', 'Me', your name, ...\n>",
@@ -162,7 +175,7 @@ class Game:
             if context is None:
                 return
 
-            self.story = Conversation(self.gen, censor=args.censor)
+            self.story = Conversation(self.gen, censor=self.settings.get('censor'))
             self.story.new(context, player=player.strip(), bot=bot.strip())
 
     def load_prompt(self):
@@ -176,9 +189,9 @@ class Game:
 
         if action is not None:
             if action.endswith(' (conversation)'):
-                self.story = Conversation(self.gen, censor=args.censor)
+                self.story = Conversation(self.gen, censor=self.settings.get('censor'))
             else:
-                self.story = Story(self.gen, censor=args.censor)
+                self.story = Story(self.gen, censor=self.settings.get('censor'))
             self.story.load(action)
 
     def save_prompt(self):
@@ -326,7 +339,7 @@ class Game:
 
                     action = user_input.strip(' ')
 
-                    if action:
+                    if action and str(self.story)[-1] != '\n':
                         action = ' ' + action
 
                     # capitalize
@@ -335,7 +348,7 @@ class Game:
                                     lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
 
                     if isinstance(self.story, Conversation):
-                        if args.lang[0] == 'fr':
+                        if self.settings.get('language') == 'fr':
                             action = f'\n[{self.story.player}:] {action.strip()}\n[{self.story.bot}:] '
                         else:
                             action = f'\n{self.story.player}: "{action.strip()}"\n{self.story.bot}: "'
@@ -374,7 +387,7 @@ class Game:
                     return
 
                 action = user_input.strip()
-                if action:
+                if action and str(self.story)[-1] != '\n':
                     action = ' ' + action
 
                 # capitalize
@@ -383,7 +396,7 @@ class Game:
                                 lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
 
                 if isinstance(self.story, Conversation):
-                    if args.lang[0] == 'fr':
+                    if self.settings.get('language') == 'fr':
                         action = f'\n[{self.story.player}:] {action.strip()}\n[{self.story.bot}:] '
                     else:
                         action = f'\n{self.story.player}: "{action.strip()}"\n{self.story.bot}: "'
@@ -464,36 +477,6 @@ class Game:
 
 
 if __name__ == "__main__":
-    # declare command line arguments
-    parser = argparse.ArgumentParser(description='wrAIter: AI writing assistant with a voice')
-    parser.add_argument('-j', '--jupyter', action='store_true',
-                        default=False,
-                        help='jupyter compatibility mode (replaces arrow key selection, disables audio)')
-    parser.add_argument('-c', '--censor', action='store_true',
-                        default=False,
-                        help='adds a censor to the generator')
-    parser.add_argument('-s', '--silent', action='store_true',
-                        default=False,
-                        help='silence the voices, freeing compute resources')
-    parser.add_argument('-m', '--model', action='store',
-                        default=['KoboldAI/OPT-2.7B-Nerys-v2'], nargs=1, type=str,
-                        help='model name')
-    parser.add_argument('-t', '--cputts', action='store_true',
-                        default=False,
-                        help='force TTS to run on CPU')
-    parser.add_argument('-x', '--cputext', action='store_true',
-                        default=False,
-                        help='force text generation to run on CPU')
-    parser.add_argument('-p', "--precision", type=int, default=16, help='float precision, only available'
-                                                                        'with GPU enabled for text generation,'
-                                                                        'possible values are 4, 8, 16 (default 16),'
-                                                                        'lower values reduce VRAM usage')
-    parser.add_argument('-l', '--lang', action='store',
-                        default=['en'], nargs=1, type=str,
-                        help='generative models language (en, fr, de, it, es, ...)')
-
-    args = parser.parse_args()
-
     if not os.path.exists('./saved_stories'):
         os.mkdir('./saved_stories')
 

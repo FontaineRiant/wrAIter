@@ -12,4 +12,5 @@ __pycache__
 saved_stories
 _saved_stories
 
+settings.json
 custom_play.sh

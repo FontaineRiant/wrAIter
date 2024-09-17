@@ -346,6 +346,8 @@ class Game:
                     action = re.sub(r'\bi\b', 'I', action)  # capitalize lone 'I'
                     action = re.sub(r'[.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)',
                                     lambda matchobj: matchobj.group(0).upper(), action)  # capitalize start of sentences
+                    # remove spaces after carriage returns
+                    action = re.sub(r'\n ', '\n', action)
 
                     if isinstance(self.story, Conversation):
                         if self.settings.get('language') == 'fr':

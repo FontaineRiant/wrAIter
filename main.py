@@ -339,7 +339,7 @@ class Game:
 
                     action = user_input.strip(' ')
 
-                    if action and str(self.story)[-1] != '\n':
+                    if action and str(self.story)[-1:] != '\n':
                         action = ' ' + action
 
                     # capitalize
@@ -389,7 +389,7 @@ class Game:
                     return
 
                 action = user_input.strip()
-                if action and str(self.story)[-1] != '\n':
+                if action and str(self.story)[-1:] != '\n':
                     action = ' ' + action
 
                 # capitalize

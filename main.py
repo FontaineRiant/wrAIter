@@ -10,14 +10,11 @@ from postprocess import postprocess
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from audio.tts import Dub
-from audio.stt import CustomMic
-from InquirerPy import prompt
 from InquirerPy import inquirer
 from story.story import Story
 from story.story import SAVE_PATH as SAVE_PATH
 from story.conversation import Conversation
 from generator.generator import Generator
-import argparse
 import re
 import readline  # actually necessary for pyinquirer to work consistently
 import shutil
@@ -115,6 +112,7 @@ class Game:
                 self.stt = None
                 self.loop = self.loop_text
             elif action == 'switch to voice input':
+                from audio.stt import CustomMic
                 self.stt = CustomMic(english=(self.settings.get('language') == 'en'), model='medium')
                 self.loop = self.loop_voice
             elif action in ('mute audio', 'unmute audio'):

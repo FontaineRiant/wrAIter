@@ -86,6 +86,7 @@ class Story:
         result = result.replace("`", "'")
         result = result.replace("“", '"')
         result = result.replace("”", '"')
+        result = result.replace(" \n", '\n')
         result = result.replace("\n\n", '\n')
 
         # remove repeating substrings of 2+ characters at the end of result

@@ -1,4 +1,4 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
+from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer, BitsAndBytesConfig
 import torch
 
 
@@ -22,9 +22,19 @@ class Generator:
                                                               torch_dtype=torch.float16 if gpu else torch.float32)
             self.model.to(self.device)
         elif precision == 8:
-            self.model = AutoModelForCausalLM.from_pretrained(model_name, load_in_8bit=gpu)
+            bnb_config = BitsAndBytesConfig(
+                load_in_8bit=True,
+                llm_int8_enable_fp32_cpu_offload=False
+            )
+            self.model = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=bnb_config)
         elif precision == 4:
-            self.model = AutoModelForCausalLM.from_pretrained(model_name, load_in_4bit=gpu)
+            bnb_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.bfloat16
+            )
+            self.model = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=bnb_config)
         else:
             raise ValueError(f'float precision {precision} not supported')
 

@@ -27,12 +27,11 @@ and was fine-tuned to write fictional stories.
 ![image](https://github.com/FontaineRiant/wrAIter/assets/25899941/8375e18f-e34c-41c4-8a9a-b4f84e405944)
 
 ## Local Installation
-0. (Optional) Set up CUDA 11.1 to enable hardware acceleration if your GPU can take it.
-1. Install python 3.7 or greater (not compatible with 3.12 as of yet)
-2. Set the PHONEMIZER_ESPEAK_PATH environment variable to `C:\Program Files\eSpeak NG\espeak-ng.exe` or wherever you installed it. (windows only)
-3. Download or clone this repository.
-4. Run `install.ps1` (windows powershell) or `install.sh` (shell script).
-5. Play by running `play.ps1` (windows powershell) or `play.sh` (shell script). You can also launch `main.py` directly with your own launch options (model selection, gpu/cpu).
+1. Install python 3.10 or greater (tested on 3.12)
+2. Download or clone this repository.
+3. Run `install.ps1` (windows powershell) or `install.sh` (shell script).
+4. Play by running `play.ps1` (windows powershell) or `play.sh` (shell script). You can also launch `main.py` directly with your own launch options (model selection, gpu/cpu).s
+5. Set up [PyTorch](https://pytorch.org/get-started/locally/) with CUDA or ROCm for GPU acceleration, or disable GPU in the `settings.json` created after the first run.
 
 
 ## FAQ

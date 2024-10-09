@@ -11,9 +11,9 @@ class Settings:
             'model': 'KoboldAI/OPT-2.7B-Nerys-v2',  # model name on huggingface
             "model_illustrator": "CompVis/stable-diffusion-v1-4",  # image model name on huggingface
             'illustrator_negative_prompt' : 'poor quality, bad anatomy, empty eyes, ugly, blurry, worst quality, missing limbs, deformed, error, jpeg, text, low res',
-            'cputts': False,  # force TTS to run on CPU
-            'cputext': False,  # force text generation to run on CPU
-            'cpuillustrate': False,  # force image generation to run on CPU
+            'cputts': True,  # force TTS to run on CPU
+            'cputext': True,  # force text generation to run on CPU
+            'cpuillustrate': True,  # force image generation to run on CPU
             'precision': 16,  # float precision, only available with GPU enabled for text generation,
             # possible values are 4, 8, 16 (default 16), lower values reduce VRAM usage
             'language': 'en',

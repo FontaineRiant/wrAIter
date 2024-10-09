@@ -489,8 +489,5 @@ class Game:
 
 
 if __name__ == "__main__":
-    if not os.path.exists('./saved_stories'):
-        os.mkdir('./saved_stories')
-
     g = Game()
     g.play()

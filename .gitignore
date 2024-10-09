@@ -9,8 +9,7 @@ fine-tuning
 venv
 __pycache__
 .idea
-saved_stories
-_saved_stories
+*saved_stories
 
-settings.json
+*settings.json
 custom_play.sh

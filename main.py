@@ -5,6 +5,7 @@ from InquirerPy.separator import Separator
 from prompt_toolkit.filters import Condition
 
 import settings
+from illustrator.illustrator import Illustrator
 from postprocess import postprocess
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -28,6 +29,7 @@ class Game:
         self.gen = Generator(model_name=self.settings.get('model'), gpu=not self.settings.get('cputext'), precision=self.settings.get('precision'))
         self.tts = None if self.settings.get('silent') else Dub(gpu=not self.settings.get('cputts'), lang=self.settings.get('language'))
         self.stt = None
+        self.illustrator = None
         self.story = Story(self.gen, censor=self.settings.get('censor'))
         self.loop = self.loop_text
         self.sample_hashes = []
@@ -270,6 +272,11 @@ class Game:
                     self.keybind_pressed = save
                     inquirer_prompt._handle_skip(event)
 
+                @inquirer_prompt.register_kb('c-o')
+                def illustrate(event):
+                    self.keybind_pressed = illustrate
+                    inquirer_prompt._handle_skip(event)
+
                 @inquirer_prompt.register_kb('up', filter=Condition(lambda: len(self.story.events) > 1))
                 def revert(event):
                     if self.tts is not None:
@@ -295,6 +302,7 @@ class Game:
                           'ctrl-p       edit context/starting prompt\n'
                           'ctrl-s       save story\n'
                           'ctrl-w       print word count and other stats\n'
+                          'ctrl-o       show illustration for current story key words\n'
                           'ctrl-c       reset current text box, interrupt generation and audio\n')
                     input('Press enter to continue.')
                     inquirer_prompt._handle_skip(event)
@@ -318,6 +326,10 @@ class Game:
 
                 elif self.keybind_pressed == save:
                     self.save_prompt()
+                elif self.keybind_pressed == illustrate:
+                    if self.illustrator is None:
+                        self.illustrator = Illustrator(self.settings)
+                    self.illustrator.illustrate(self.story)
                 elif user_input is None:
                     # CTRL+C case (inquirer returned None)
                     if self.tts is not None:

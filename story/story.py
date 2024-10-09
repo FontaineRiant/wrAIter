@@ -4,16 +4,15 @@ import re
 from difflib import SequenceMatcher
 import hashlib
 from collections import Counter
+
+from settings import Settings
+
 from generator.generator import Generator
 import csv
 
-SAVE_PATH = "./saved_stories/"
+SAVE_PATH = Settings().get('save_directory')
 if not os.path.exists(SAVE_PATH):
     os.makedirs(SAVE_PATH)
-
-
-def story_hash(string: str):
-    return hashlib.md5(bytes(string.lstrip()[:1000], 'utf-8')).hexdigest()
 
 
 class Story:
@@ -150,18 +149,32 @@ class Story:
 
         return res
 
-    def wordcloud(self, top_n=10, include_count=False):
-        words = [w for w
-                 in re.sub(r"[\W\d]+", ' ', str(self).lower().replace("n't", '')).split()
-                 if len(w) > 1]
-        wordcloud = {w: count for w, count in Counter(words).most_common() if count > 1}
+    def wordcloud(self, top_n=10, include_count=False, history_lookback=None):
+        def str_to_words(text):
+            return [w for w
+                    in re.sub(r"[\W\d]+", ' ', text.lower().replace("n't", '')).split()
+                    if len(w) > 1]
+
+        words = str_to_words(str(self))
+
+        if history_lookback:
+            words = words[-history_lookback:] + str_to_words(self.events[0])
+        wordcloud = {w: count for w, count in Counter(words).most_common() if count > 0}
 
         # adjust weight relatively to usual frequency of words
+        min_freq = 1e20
+        found_words = set()
         with open('story/unigram_freq_by_Rachael_Tatman_on_kaggle.csv') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',')
             for row in reader:
                 if row['word'] in wordcloud:
-                    wordcloud[row['word']] /= int(row['count']) + 1
+                    wordcloud[row['word']] /= int(row['count'])
+                    min_freq = min(int(row['count']), min_freq)
+                    found_words.add(row['word'])
+
+        # assume unknown words have low frequency, but still have a frequency
+        for w in wordcloud.keys() - found_words:
+            wordcloud[w] /= min_freq
 
         wordcloud = sorted(wordcloud.items(), key=lambda x: x[1], reverse=True)[:top_n]
 

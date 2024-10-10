@@ -10,9 +10,7 @@ The AI writer is powered by any LLM that can be found on [Hugging Face](https://
 The default model has 2.7 billion parameters
 and was fine-tuned to write fictional stories.
 
-![image](https://github.com/FontaineRiant/wrAIter/assets/25899941/44173a2e-6cd4-4ec6-bf7a-f1028a23902c)
-
-wrAIter also displays illustrations for your story when you press `ctrl+o`. The default model Stable Diffusion 1.4 can be switched up in `settings.json`.
+wrAIter also displays illustrations for your story when you press `ctrl+o`. The default model Stable Diffusion 1.4 can be switched up in `settings.json`
 
 ![Screenshot_20241010_091804](https://github.com/user-attachments/assets/f7b8da39-4783-4d27-a6fc-a4295502be55)
 

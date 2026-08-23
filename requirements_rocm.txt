@@ -1,6 +1,9 @@
-torch==2.6.0+rocm6.2.4
-torchaudio==2.6.0+rocm6.2.4
-torchvision==0.21.0+rocm6.2.4
+#torch==2.6.0+rocm6.2.4
+#torchaudio==2.6.0+rocm6.2.4
+#torchvision==0.21.0+rocm6.2.4
+torch==2.9.1+rocm6.4
+torchaudio==2.9.1+rocm6.4
+torchvision==0.24.1+rocm6.4
 whisper-mic==1.4.2
 sentencepiece
 inquirerpy
@@ -11,4 +14,4 @@ diffusers
 accelerate
 gguf
 transformers
---extra-index-url https://download.pytorch.org/whl/rocm6.2.4
+--extra-index-url https://download.pytorch.org/whl/rocm6.4

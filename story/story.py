@@ -57,28 +57,30 @@ class Story:
     def get_max_history(self):
         max_tokens = self.gen.model.config.max_position_embeddings
         if hasattr(self.gen.model.config, 'sliding_window'):
-            max_tokens = min(int(self.gen.model.config.sliding_window * 1.5), max_tokens)
+            max_tokens = min(int(self.gen.model.config.sliding_window * 1.0), max_tokens)
         return max_tokens - self.gen_length
 
     def clean_input(self, action='', context=None):
         context = self.events[0] if context is None else context
+        content = re.split(r'(\n)', ''.join(filter(None, self.events[1:])).lstrip())  # split on \n instead of events
+        content = [''] + content
         # find the biggest memory that fits max_tokens
         mem_ind = 1
         while len(
-                self.gen.enc.encode(context + ''.join(filter(None, self.events[-mem_ind:]))
-                                    + action)) < self.get_max_history() and len(self.events) - 1 >= mem_ind:
+                self.gen.enc.encode(context + ''.join(filter(None, content[-mem_ind:]))
+                                    + action)) < self.get_max_history() and len(content) - 1 >= mem_ind:
             mem_ind += 1
         mem_ind -= 1
 
         events_clipped = context
         strip_one = True
         while mem_ind > 0:
-            if len(self.events) - 1 >= mem_ind and self.events[-mem_ind]:
+            if len(content) - 1 >= mem_ind and content[-mem_ind]:
                 if strip_one:
-                    events_clipped += self.events[-mem_ind].lstrip(' ')
+                    events_clipped += content[-mem_ind].lstrip()
                     strip_one = False
                 else:
-                    events_clipped += self.events[-mem_ind]
+                    events_clipped += content[-mem_ind]
             mem_ind -= 1
 
         text = events_clipped + action

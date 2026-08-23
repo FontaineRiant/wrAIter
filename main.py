@@ -376,7 +376,7 @@ class Game:
 
                     action = user_input.strip(' ')
 
-                    if action and str(self.story)[-1:] != '\n':
+                    if action and str(self.story)[-1:] != '\n' and action[0] not in ",.':-;!?":
                         action = ' ' + action
 
                     # capitalize
